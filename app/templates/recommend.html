@@ -24,15 +24,23 @@
 </form>
 
 <div class="panel">
-  <div class="muted">Interests</div>
+  <div class="muted">Stated interests</div>
   <div>{{ interests | join(', ') or '-' }}</div>
+  {% if inferred_interests %}
+    <div class="muted" style="margin-top:10px">Inferred from reading history <span class="tag">R3 &middot; 0.5&times;</span></div>
+    <div>{{ inferred_interests | join(', ') }}</div>
+  {% endif %}
   <div class="muted" style="margin-top:10px">Already read</div>
   <div>{{ already | join(', ') or '-' }}</div>
 </div>
 
 <h2>Ranked results</h2>
 {% if not recs %}
-  <p class="muted">No unread works match this reader's interests.</p>
+  {% if not interests and not inferred_interests %}
+    <p class="muted">This reader has no stated interests and none could be inferred from their reading history.</p>
+  {% else %}
+    <p class="muted">No unread works match this reader's interests.</p>
+  {% endif %}
 {% else %}
 <div class="panel" style="padding:0">
 <table>
@@ -47,7 +55,9 @@
       {% for e in r.evidence %}
         <div class="why">
           <code>{{ e.engagement }}</code> {{ e.stance }} on
-          <em>{{ e.concept }}</em> vs {{ e.other_work }},
+          <em>{{ e.concept }}</em>
+          {% if e.interest_kind == 'inferred' %}<span class="tag">via {{ e.via_work }}</span>{% endif %}
+          vs {{ e.other_work }},
           confidence {{ '%g' % e.confidence }}
           &rarr; +{{ '%.2f' % e.contribution }}
         </div>
@@ -62,9 +72,10 @@
 <h2>How the score is computed</h2>
 <div class="panel">
 <pre>score(work) = SUM over supporting engagements of
-                  confidence x stance_weight
+                  confidence x stance_weight x interest_weight
 
-stance_weight:  praises 1.0   criticizes 0.8   neutral 0.6</pre>
+stance_weight:    praises 1.0   criticizes 0.8   neutral 0.6
+interest_weight:  stated 1.0    inferred from reading (R3) 0.5</pre>
 <p class="why">
   Criticism is weighted below praise but well above nothing: a work attacking a
   concept you care about is still highly relevant to you. That is a judgement

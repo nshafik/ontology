@@ -309,10 +309,13 @@ def recommend():
       ORDER BY ?label""" % PREFIX))
     from rdflib import URIRef
     node = URIRef(PREFIX + reader.lstrip(":"))
-    interests = sorted(agent.label(c) for c in agent.g.objects(node, agent_ns().hasInterestIn))
+    stated = sorted(agent.label(c) for c in agent.g.objects(node, agent_ns().hasInterestIn))
+    inferred = sorted(agent.label(c) for c in agent.g.objects(node, agent_ns().inferredInterestIn)
+                      if agent.label(c) not in stated)
     already = sorted(agent.label(w) for w in agent.g.objects(node, agent_ns().hasRead))
     return render_template("recommend.html", reader=reader, recs=recs,
-                           readers=readers, interests=interests, already=already)
+                           readers=readers, interests=stated,
+                           inferred_interests=inferred, already=already)
 
 
 def agent_ns():
@@ -471,7 +474,7 @@ def validation() -> tuple[bool, str]:
         shapes = Graph().parse(ROOT / "philosophy_shapes.ttl", format="turtle")
         onto = Graph().parse(ROOT / "philosophy_ontology.ttl", format="turtle")
         conforms, _, text = validate(data, shacl_graph=shapes, ont_graph=onto,
-                                     inference="rdfs")
+                                     inference="rdfs", allow_warnings=True)
         _validation = (bool(conforms), str(text))
     return _validation
 

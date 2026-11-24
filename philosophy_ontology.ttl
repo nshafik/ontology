@@ -291,7 +291,17 @@
 
 :hasInterestIn a owl:ObjectProperty ;
     rdfs:label "hasInterestIn"@en ;
-    rdfs:comment "Reader preference."@en ;
+    rdfs:comment "Stated reader preference."@en ;
+    rdfs:domain :Reader ;
+    rdfs:range :Concept .
+
+# Kept separate from :hasInterestIn (not a sub-property of it) so queries over
+# stated interests (CQ7, CQ12, CQ13) see only curated preferences, while the
+# recommender combines stated (weight 1.0) and read-derived (weight 0.5)
+# interests. Materialised by rule R3 in app/agent.py.
+:inferredInterestIn a owl:ObjectProperty ;
+    rdfs:label "inferredInterestIn"@en ;
+    rdfs:comment "Concept engaged with by a work the reader has read. Materialised by rule R3; weaker signal than hasInterestIn."@en ;
     rdfs:domain :Reader ;
     rdfs:range :Concept .
 

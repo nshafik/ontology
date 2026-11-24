@@ -50,6 +50,7 @@ ROOT = HERE.parent
 P = Namespace("http://example.org/philosophy#")
 
 STANCE_WEIGHT = {"praises": 1.0, "neutral": 0.6, "criticizes": 0.8}
+INTEREST_WEIGHT = {"stated": 1.0, "inferred": 0.5}
 
 
 # --------------------------------------------------------------------------
@@ -63,11 +64,15 @@ class Evidence:
     confidence: float
     other_work: str
     contribution: float
+    interest_kind: str = "stated"
+    via_work: str | None = None
 
     def sentence(self) -> str:
-        return (f"{self.engagement} {self.stance} in relation to "
-                f"'{self.concept}' (vs {self.other_work}), "
-                f"confidence {self.confidence:g} "
+        origin = (f"stated interest in '{self.concept}'" if self.interest_kind == "stated"
+                  else f"inferred interest in '{self.concept}' (from reading {self.via_work})")
+        return (f"{self.engagement} {self.stance} on {origin} "
+                f"(vs {self.other_work}), "
+                f"confidence {self.confidence:g} x {INTEREST_WEIGHT[self.interest_kind]:g} "
                 f"-> +{self.contribution:.2f}")
 
 
@@ -107,11 +112,11 @@ class Agent:
     # -- rule layer ------------------------------------------------------
 
     def materialise_rules(self) -> list[tuple[str, str, str]]:
-        """Rule R1: derive :criticizes / :praises from engagement stance.
+        """Rule R1 (:criticizes/:praises) and R3 (:inferredInterestIn).
 
         Adds the inferred triples to the in-memory graph and returns them.
-        OWL cannot express this: the conclusion depends on the VALUE of a
-        data property, which is outside description-logic class axioms.
+        R1 branches on a literal value; R3 is kept separate from :hasInterestIn
+        so read-derived interests carry a lower weight (0.5 vs 1.0).
         """
         added = []
         for stance, prop in (("criticizes", P.criticizes), ("praises", P.praises)):
@@ -126,26 +131,56 @@ class Agent:
                 if (source, prop, target) not in self.g:
                     self.g.add((source, prop, target))
                     added.append((self.label(source), stance, self.label(target)))
+
+        for reader, concept in self.g.query("""
+            PREFIX : <http://example.org/philosophy#>
+            SELECT DISTINCT ?r ?c WHERE {
+              ?r :hasRead ?w .
+              ?e :aboutConcept ?c .
+              { ?e :toWork ?w } UNION { ?e :fromWork ?w }
+            }"""):
+            if (reader, P.inferredInterestIn, concept) not in self.g:
+                self.g.add((reader, P.inferredInterestIn, concept))
+                added.append((self.label(reader), "inferredInterestIn", self.label(concept)))
         return added
 
     # -- recommendation --------------------------------------------------
+
+    def _read_sources_by_concept(self, already_read: set) -> dict[URIRef, str]:
+        """Map concept -> title of a read work that engaged with it."""
+        via: dict[URIRef, str] = {}
+        for work in sorted(already_read, key=str):
+            for pred in (P.toWork, P.fromWork):
+                for eng in self.g.subjects(pred, work):
+                    concept = self.g.value(eng, P.aboutConcept)
+                    if concept is not None and concept not in via:
+                        via[concept] = self.label(work)
+        return via
 
     def recommend(self, reader: str, limit: int = 10) -> list[Recommendation]:
         """Rank unread works for a reader, with an explanation for each."""
         reader_node = URIRef(str(P) + reader.lstrip(":"))
 
-        interests = set(self.g.objects(reader_node, P.hasInterestIn))
+        stated = set(self.g.objects(reader_node, P.hasInterestIn))
         already_read = set(self.g.objects(reader_node, P.hasRead))
-        if not interests:
+        # Derive on demand too, in case the caller skipped materialise_rules().
+        read_via = self._read_sources_by_concept(already_read)
+        inferred = set(self.g.objects(reader_node, P.inferredInterestIn)) | set(read_via)
+        # A concept already stated stays at weight 1.0 even if also read.
+        concept_weights: dict[URIRef, tuple[float, str, str | None]] = {
+            c: (INTEREST_WEIGHT["stated"], "stated", None) for c in stated
+        }
+        for c in inferred - stated:
+            concept_weights[c] = (INTEREST_WEIGHT["inferred"], "inferred", read_via.get(c))
+        if not concept_weights:
             return []
 
-        # CQ12/CQ13 give the candidate set; the scoring below is the part
-        # that neither OWL nor SPARQL can do.
         scored: dict[URIRef, Recommendation] = {}
         for engagement in self.g.subjects(P.aboutConcept, None):
             concept = self.g.value(engagement, P.aboutConcept)
-            if concept not in interests:
+            if concept not in concept_weights:
                 continue
+            i_weight, i_kind, via_work = concept_weights[concept]
             stance = str(self.g.value(engagement, P.stance))
             confidence = float(self.g.value(engagement, P.confidenceScore) or 0.5)
             source = self.g.value(engagement, P.fromWork)
@@ -154,7 +189,7 @@ class Agent:
             for work, other in ((source, target), (target, source)):
                 if work is None or work in already_read:
                     continue
-                contribution = confidence * STANCE_WEIGHT.get(stance, 0.5)
+                contribution = confidence * STANCE_WEIGHT.get(stance, 0.5) * i_weight
                 rec = scored.get(work)
                 if rec is None:
                     author = self.g.value(work, P.createdBy)
@@ -173,6 +208,8 @@ class Agent:
                     confidence=confidence,
                     other_work=self.label(other),
                     contribution=contribution,
+                    interest_kind=i_kind,
+                    via_work=via_work,
                 ))
 
         ranked = sorted(scored.values(), key=lambda r: (-r.score, r.title))

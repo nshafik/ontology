@@ -369,6 +369,22 @@ WHERE {
 ORDER BY ?name""",
         note="A data gap, not an error: it keeps OPTIONAL patterns meaningful.",
     ),
+    CQ(
+        id="R3",
+        question="Derive :inferredInterestIn from the concepts engaged by a reader's read works",
+        features="CONSTRUCT, UNION",
+        path=":Reader -hasRead-> :Work <-fromWork|toWork- :Engagement -aboutConcept-> :Concept",
+        expected=6,
+        kind="construct",
+        sparql="""
+CONSTRUCT { ?r :inferredInterestIn ?c }
+WHERE {
+  ?r :hasRead ?w .
+  ?e :aboutConcept ?c .
+  { ?e :toWork ?w } UNION { ?e :fromWork ?w }
+}""",
+        note="Weaker signal (weight 0.5) than stated :hasInterestIn (1.0); rescues readers with reading history only.",
+    ),
 ]
 
 ALL = CQS + RULES

@@ -117,7 +117,7 @@ def run_shacl() -> bool:
     cmd = [
         sys.executable, "-m", "pyshacl",
         "-s", str(SHAPES), "-e", str(ONTOLOGY),
-        "-i", "rdfs", "-f", "human", str(DATASET),
+        "-i", "rdfs", "-w", "-f", "human", str(DATASET),
     ]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
     conforms = "Conforms: True" in r.stdout

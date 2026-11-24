@@ -110,3 +110,11 @@
         sh:message "locatedIn must not form a cycle." ;
         sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#locatedIn>+ $this }"
     ] .
+
+# ---- Reader ----------------------------------------------------------------
+# Advisory: a reader with neither stated interests nor read works whose
+# engagements name a concept has nothing to drive recommendations from.
+:ReaderShape a sh:NodeShape ;
+    sh:targetClass :Reader ;
+    sh:property [ sh:path :hasInterestIn ; sh:minCount 1 ; sh:severity sh:Warning ;
+                  sh:message "Reader has no stated hasInterestIn; recommendations fall back to read-derived interests (rule R3) if any." ] .

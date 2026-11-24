@@ -70,9 +70,32 @@ class Recommender(unittest.TestCase):
             self.assertAlmostEqual(rec.score, sum(e.contribution for e in rec.evidence))
         self.assertEqual(recs, sorted(recs, key=lambda r: (-r.score, r.title)))
 
-    def test_rule_r1_materialises_shortcuts(self):
+    def test_rule_r1_and_r3_materialise(self):
         added = Agent().materialise_rules()
-        self.assertEqual(len(added), 9)
+        r1 = [x for x in added if x[1] in ("criticizes", "praises")]
+        r3 = [x for x in added if x[1] == "inferredInterestIn"]
+        self.assertEqual(len(r1), 9)
+        self.assertEqual(len(r3), 6)
+
+    def test_russell_rescued_by_read_derived_interests(self):
+        agent = Agent()
+        agent.materialise_rules()
+        recs = agent.recommend(":Russell")
+        self.assertEqual([r.work for r in recs], [":PhilosophicalInvestigations"])
+        self.assertAlmostEqual(recs[0].score, 0.95 * 0.8 * 0.5)
+        self.assertEqual(recs[0].evidence[0].interest_kind, "inferred")
+        self.assertIn("Tractatus", recs[0].evidence[0].sentence())
+
+    def test_reader_with_no_reads_and_no_interests_explains_empty_state(self):
+        from rdflib import RDF, RDFS, Literal
+        agent = Agent()
+        agent.g.add((server.agent_ns().nobody, RDF.type, server.agent_ns().Reader))
+        agent.g.add((server.agent_ns().nobody, RDFS.label, Literal("Nobody")))
+        self.assertEqual(agent.recommend(":nobody"), [])
+        with mock.patch.object(server, "_fallback", agent):
+            r = server.app.test_client().get("/recommend?reader=:nobody")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"no stated interests and none could be inferred", r.data)
 
 
 class Routing(unittest.TestCase):
