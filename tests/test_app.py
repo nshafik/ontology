@@ -35,14 +35,13 @@ def gemini_reply(text: str):
 
 
 class CompetencyQueries(unittest.TestCase):
-    """Every CQ returns its documented count against the core graph."""
+    """Every CQ returns its documented count against the built bundle."""
 
     @classmethod
     def setUpClass(cls):
         from rdflib import Graph
         cls.g = Graph()
-        cls.g.parse(ROOT / "philosophy_ontology.ttl")
-        cls.g.parse(ROOT / "philosophy_dataset.ttl")
+        cls.g.parse(ROOT / "philosophy_complete.ttl")
 
     def test_expected_counts(self):
         for cq in CQS:
@@ -55,6 +54,13 @@ class CompetencyQueries(unittest.TestCase):
                 else:
                     got = len(list(res))
                 self.assertEqual(got, cq.expected)
+
+    def test_wikidata_enrichment_present(self):
+        from rdflib import Namespace
+        p = Namespace("http://example.org/philosophy#")
+        nietzsche_works = list(self.g.subjects(p.createdBy, p.Nietzsche))
+        self.assertGreaterEqual(len(nietzsche_works), 7)
+        self.assertIn((p.Nietzsche, p.influencedBy, p.Kant), self.g)
 
 
 class Recommender(unittest.TestCase):

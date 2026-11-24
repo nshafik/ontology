@@ -30,6 +30,7 @@ HERE = Path(__file__).parent
 ONTOLOGY = HERE / "philosophy_ontology.ttl"
 LINKS = HERE / "philosophy_links.ttl"
 DATASET = HERE / "philosophy_dataset.ttl"
+ENRICHMENT = HERE / "data" / "wikidata_enrichment.ttl"
 SHAPES = HERE / "philosophy_shapes.ttl"
 COMPLETE = HERE / "philosophy_complete.ttl"
 
@@ -47,15 +48,16 @@ COMPLETE = HERE / "philosophy_complete.ttl"
 # Standard Linked Data practice is therefore to publish identity links as a
 # separate graph. philosophy_complete.ttl stays the clean reasoning bundle;
 # load philosophy_links.ttl alongside it only for LOD traversal.
-SOURCES = [ONTOLOGY, DATASET]
+SOURCES = [ONTOLOGY, DATASET] + ([ENRICHMENT] if ENRICHMENT.exists() else [])
 
 HEADER = """\
 ###############################################################################
 #  GENERATED FILE - DO NOT EDIT BY HAND.
 #
 #  Built by build.py from:
-#      philosophy_ontology.ttl   (TBox: classes, properties, axioms)
-#      philosophy_dataset.ttl    (ABox: individuals)
+#      philosophy_ontology.ttl      (TBox: classes, properties, axioms)
+#      philosophy_dataset.ttl       (ABox: curated individuals & engagements)
+#      data/wikidata_enrichment.ttl (generated P50/P577 works & P737 influences)
 #
 #  This single-file bundle is what you open in Protege. Edit the sources and
 #  re-run `python3 build.py` instead of editing this file.
@@ -117,7 +119,7 @@ def run_shacl() -> bool:
     cmd = [
         sys.executable, "-m", "pyshacl",
         "-s", str(SHAPES), "-e", str(ONTOLOGY),
-        "-i", "rdfs", "-w", "-f", "human", str(DATASET),
+        "-i", "rdfs", "-w", "-f", "human", str(COMPLETE),
     ]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
     conforms = "Conforms: True" in r.stdout
@@ -164,10 +166,10 @@ def run_hermit() -> bool:
 # modelling change or a regression; both deserve a look.
 EXPECTED_INFERENCES = {
     "hasTeachingAncestor": 19,
-    "influencedBy": 28,
+    "influencedBy": 96,
     "isWithinSchool": 26,
-    "authored": 30,
-    "createdInLineageOf": 27,
+    "authored": 116,
+    "createdInLineageOf": 64,
     "createdIn": 20,
 }
 
@@ -287,8 +289,7 @@ def run_queries() -> bool:
     from queries import ALL, render
 
     g = Graph()
-    g.parse(ONTOLOGY, format="turtle")
-    g.parse(DATASET, format="turtle")
+    g.parse(COMPLETE, format="turtle")
 
     ok = True
     for cq in ALL:

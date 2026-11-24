@@ -465,12 +465,12 @@ def entities() -> list:
 
 
 def validation() -> tuple[bool, str]:
-    """SHACL over the core graph, run once and cached."""
+    """SHACL over the built bundle, run once and cached."""
     global _validation
     if _validation is None:
         from pyshacl import validate
         from rdflib import Graph
-        data = Graph().parse(ROOT / "philosophy_dataset.ttl", format="turtle")
+        data = Graph().parse(ROOT / "philosophy_complete.ttl", format="turtle")
         shapes = Graph().parse(ROOT / "philosophy_shapes.ttl", format="turtle")
         onto = Graph().parse(ROOT / "philosophy_ontology.ttl", format="turtle")
         conforms, _, text = validate(data, shacl_graph=shapes, ont_graph=onto,

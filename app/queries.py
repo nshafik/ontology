@@ -143,7 +143,7 @@ ORDER BY ?title ?how""",
         question="Which period does the philosopher belong to?",
         features="SELECT DISTINCT",
         path=":Philosopher <-createdBy- :Work -composedDuring-> :TimePeriod",
-        expected=22,
+        expected=24,
         sparql="""
 SELECT DISTINCT ?name ?periodLabel
 WHERE {
@@ -194,7 +194,7 @@ ORDER BY DESC(?students) ?name""",
         question="What impact did the philosophers have in their era?",
         features="SELECT, aggregation, OPTIONAL, HAVING",
         path=":Philosopher <-influencedBy|studiedUnder-, and :Engagement -toWork-> :Work",
-        expected=19,
+        expected=26,
         sparql="""
 SELECT ?name
        (COUNT(DISTINCT ?follower) AS ?influenced)

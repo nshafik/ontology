@@ -1,0 +1,970 @@
+###############################################################################
+#  GENERATED FILE - DO NOT EDIT BY HAND. Regenerate with:
+#      python3 app/enrich_wikidata.py && python3 build.py
+#
+#  Works (P50, P577) and influences (P737) from Wikidata, snapshot 2026-11-24.
+#  Settings: min_sitelinks=12, per_author=7.
+#
+#  Provenance: every work carries prov:wasDerivedFrom <its Wikidata item>
+#  and :externalId. Influence links are between philosophers already in
+#  philosophy_dataset.ttl; each one is a Wikidata P737 statement.
+#
+#  These are bibliographic and biographical facts, not interpretations.
+#  No :Engagement is ever generated here - see philosophy_dataset.ttl.
+#
+#  Works without a specific genre mapping stay typed :Work rather than
+#  guessing a leaf class. Years are historical (BCE negative, no year zero).
+###############################################################################
+
+@prefix : <http://example.org/philosophy#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:AHistoryOfWesternPhilosophy a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Russell ;
+    :creationYear "1945"^^xsd:int ;
+    :externalId "Q133740"^^xsd:string ;
+    :title "A History of Western Philosophy"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q133740 .
+
+:ALetterConcerningToleration a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Locke ;
+    :creationYear "1689"^^xsd:int ;
+    :externalId "Q914139"^^xsd:string ;
+    :title "A Letter Concerning Toleration"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q914139 .
+
+:ATreatiseConcerningThePrinciplesOfHumanKnowledge a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Berkeley ;
+    :creationYear "1710"^^xsd:int ;
+    :externalId "Q3267928"^^xsd:string ;
+    :title "A Treatise Concerning the Principles of Human Knowledge"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q3267928 .
+
+:AnsweringTheQuestionWhatIsEnlightenment a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Kant ;
+    :creationYear "1784"^^xsd:int ;
+    :externalId "Q812981"^^xsd:string ;
+    :title "Answering the Question: What Is Enlightenment?"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q812981 .
+
+:Apology a :Dialogue,
+        owl:NamedIndividual ;
+    :createdBy :Plato ;
+    :externalId "Q273668"^^xsd:string ;
+    :title "Apology"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q273668 .
+
+:BeyondGoodAndEvil a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Nietzsche ;
+    :creationYear "1886"^^xsd:int ;
+    :externalId "Q579794"^^xsd:string ;
+    :title "Beyond Good and Evil"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q579794 .
+
+:Confessions a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Augustine ;
+    :externalId "Q372941"^^xsd:string ;
+    :title "Confessions"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q372941 .
+
+:ConstitutionOfTheAthenians a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Aristotle ;
+    :externalId "Q382282"^^xsd:string ;
+    :title "Constitution of the Athenians"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q382282 .
+
+:CritiqueOfJudgment a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Kant ;
+    :creationYear "1790"^^xsd:int ;
+    :externalId "Q1056332"^^xsd:string ;
+    :title "Critique of Judgment"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1056332 .
+
+:CritiqueOfPracticalReason a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Kant ;
+    :creationYear "1788"^^xsd:int ;
+    :externalId "Q870851"^^xsd:string ;
+    :title "Critique of Practical Reason"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q870851 .
+
+:CritiqueOfTheGothaProgram a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Marx ;
+    :externalId "Q1273940"^^xsd:string ;
+    :title "Critique of the Gotha Program"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1273940 .
+
+:Crito a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Plato ;
+    :externalId "Q267634"^^xsd:string ;
+    :title "Crito"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q267634 .
+
+:DeDoctrinaChristiana a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Augustine ;
+    :creationYear "397"^^xsd:int ;
+    :externalId "Q5244902"^^xsd:string ;
+    :title "De doctrina Christiana"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q5244902 .
+
+:DeLiberoArbitrio a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Augustine ;
+    :externalId "Q1142681"^^xsd:string ;
+    :title "De libero arbitrio"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1142681 .
+
+:DialoguesConcerningNaturalReligion a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Hume ;
+    :creationYear "1779"^^xsd:int ;
+    :externalId "Q965564"^^xsd:string ;
+    :title "Dialogues Concerning Natural Religion"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q965564 .
+
+:DirtyHands a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Sartre ;
+    :creationYear "1948"^^xsd:int ;
+    :externalId "Q1219278"^^xsd:string ;
+    :title "Dirty Hands"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1219278 .
+
+:DiscourseOnMetaphysics a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Leibniz ;
+    :creationYear "1686"^^xsd:int ;
+    :externalId "Q3030194"^^xsd:string ;
+    :title "Discourse on Metaphysics"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q3030194 .
+
+:DiscourseOnTheMethod a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Descartes ;
+    :creationYear "1637"^^xsd:int ;
+    :externalId "Q731224"^^xsd:string ;
+    :title "Discourse on the Method"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q731224 .
+
+:EcceHomo a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Nietzsche ;
+    :creationYear "1888"^^xsd:int ;
+    :externalId "Q861527"^^xsd:string ;
+    :title "Ecce Homo"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q861527 .
+
+:EconomicAndPhilosophicManuscriptsOf1844 a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Marx ;
+    :externalId "Q295347"^^xsd:string ;
+    :title "Economic and Philosophic Manuscripts of 1844"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q295347 .
+
+:EichmannInJerusalem a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Arendt ;
+    :creationYear "1963"^^xsd:int ;
+    :externalId "Q480743"^^xsd:string ;
+    :title "Eichmann in Jerusalem"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q480743 .
+
+:EitherOr a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Kierkegaard ;
+    :creationYear "1843"^^xsd:int ;
+    :externalId "Q1152009"^^xsd:string ;
+    :title "Either/Or"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1152009 .
+
+:ElementsOfThePhilosophyOfRight a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Hegel ;
+    :creationYear "1821"^^xsd:int ;
+    :externalId "Q1486412"^^xsd:string ;
+    :title "Elements of the Philosophy of Right"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1486412 .
+
+:EncyclopediaOfThePhilosophicalSciences a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Hegel ;
+    :creationYear "1817"^^xsd:int ;
+    :externalId "Q919699"^^xsd:string ;
+    :title "Encyclopedia of the Philosophical Sciences"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q919699 .
+
+:Euthyphro a :Dialogue,
+        owl:NamedIndividual ;
+    :createdBy :Plato ;
+    :externalId "Q648889"^^xsd:string ;
+    :title "Euthyphro"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q648889 .
+
+:ExistentialismAndHumanism a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Sartre ;
+    :creationYear "1946"^^xsd:int ;
+    :externalId "Q1247929"^^xsd:string ;
+    :title "Existentialism and Humanism"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1247929 .
+
+:FearAndTrembling a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Kierkegaard ;
+    :creationYear "1843"^^xsd:int ;
+    :externalId "Q1193229"^^xsd:string ;
+    :title "Fear and Trembling"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1193229 .
+
+:Gadamer :influencedBy :Aristotle,
+        :Hegel,
+        :Heidegger,
+        :Husserl,
+        :Kant,
+        :Kierkegaard,
+        :Plato .
+
+:GayScience a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Nietzsche ;
+    :creationYear "1882"^^xsd:int ;
+    :externalId "Q1061693"^^xsd:string ;
+    :title "Gay Science"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1061693 .
+
+:Gorgias a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Plato ;
+    :externalId "Q264241"^^xsd:string ;
+    :title "Gorgias"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q264241 .
+
+:HistoryOfAnimals a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Aristotle ;
+    :externalId "Q1620799"^^xsd:string ;
+    :title "History of Animals"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1620799 .
+
+:InPraiseOfIdlenessAndOtherEssays a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Russell ;
+    :creationYear "1935"^^xsd:int ;
+    :externalId "Q2317772"^^xsd:string ;
+    :title "In Praise of Idleness and Other Essays"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q2317772 .
+
+:LaGOmTrie a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Descartes ;
+    :creationYear "1638"^^xsd:int ;
+    :externalId "Q210113"^^xsd:string ;
+    :title "La Géométrie"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q210113 .
+
+:LecturesOnThePhilosophyOfHistory a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Hegel ;
+    :creationYear "1837"^^xsd:int ;
+    :externalId "Q1210941"^^xsd:string ;
+    :title "Lectures on the Philosophy of History"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1210941 .
+
+:MarriageAndMorals a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Russell ;
+    :creationYear "1929"^^xsd:int ;
+    :externalId "Q522520"^^xsd:string ;
+    :title "Marriage and Morals"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q522520 .
+
+:Nausea a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Sartre ;
+    :creationYear "1938"^^xsd:int ;
+    :externalId "Q658288"^^xsd:string ;
+    :title "Nausea"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q658288 .
+
+:NewEssaysOnHumanUnderstanding a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Leibniz ;
+    :externalId "Q2720221"^^xsd:string ;
+    :title "New Essays on Human Understanding"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q2720221 .
+
+:NoExit a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Sartre ;
+    :creationYear "1947"^^xsd:int ;
+    :externalId "Q670637"^^xsd:string ;
+    :title "No Exit"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q670637 .
+
+:OnCertainty a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Wittgenstein ;
+    :creationYear "1969"^^xsd:int ;
+    :externalId "Q330929"^^xsd:string ;
+    :title "On Certainty"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q330929 .
+
+:OnDenoting a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Russell ;
+    :creationYear "1905"^^xsd:int ;
+    :externalId "Q3020431"^^xsd:string ;
+    :title "On Denoting"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q3020431 .
+
+:OnTheFourfoldRootOfThePrincipleOfSufficientReason a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Schopenhauer ;
+    :creationYear "1813"^^xsd:int ;
+    :externalId "Q1762229"^^xsd:string ;
+    :title "On the Fourfold Root of the Principle of Sufficient Reason"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1762229 .
+
+:OnTheGenealogyOfMorality a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Nietzsche ;
+    :creationYear "1887"^^xsd:int ;
+    :externalId "Q230302"^^xsd:string ;
+    :title "On the Genealogy of Morality"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q230302 .
+
+:OnTheSoul a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Aristotle ;
+    :externalId "Q1180576"^^xsd:string ;
+    :title "On the Soul"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1180576 .
+
+:OnTheTrinity a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Augustine ;
+    :externalId "Q1180413"^^xsd:string ;
+    :title "On the Trinity"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1180413 .
+
+:Organon a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Aristotle ;
+    :externalId "Q500930"^^xsd:string ;
+    :title "Organon"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q500930 .
+
+:ParergaAndParalipomena a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Schopenhauer ;
+    :creationYear "1851"^^xsd:int ;
+    :externalId "Q929229"^^xsd:string ;
+    :title "Parerga and Paralipomena"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q929229 .
+
+:PassionsOfTheSoul a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Descartes ;
+    :creationYear "1649"^^xsd:int ;
+    :externalId "Q195411"^^xsd:string ;
+    :title "Passions of the Soul"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q195411 .
+
+:PerpetualPeace a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Kant ;
+    :creationYear "1795"^^xsd:int ;
+    :externalId "Q229583"^^xsd:string ;
+    :title "Perpetual peace"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q229583 .
+
+:Phaedrus a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :ClassicalGreece ;
+    :createdBy :Plato ;
+    :creationYear "-371"^^xsd:int ;
+    :externalId "Q555862"^^xsd:string ;
+    :title "Phaedrus"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q555862 .
+
+:PhilosophicalFragments a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Kierkegaard ;
+    :creationYear "1844"^^xsd:int ;
+    :externalId "Q1153168"^^xsd:string ;
+    :title "Philosophical Fragments"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1153168 .
+
+:Physics a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Aristotle ;
+    :externalId "Q1051198"^^xsd:string ;
+    :title "Physics"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1051198 .
+
+:Poetics a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Aristotle ;
+    :externalId "Q264714"^^xsd:string ;
+    :title "Poetics"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q264714 .
+
+:Politics a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Aristotle ;
+    :externalId "Q69539"^^xsd:string ;
+    :title "Politics"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q69539 .
+
+:PrinciplesOfPhilosophy a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Descartes ;
+    :creationYear "1644"^^xsd:int ;
+    :externalId "Q1195384"^^xsd:string ;
+    :title "Principles of Philosophy"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1195384 .
+
+:ReligionWithinTheBoundsOfBareReason a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Kant ;
+    :creationYear "1793"^^xsd:int ;
+    :externalId "Q1215763"^^xsd:string ;
+    :title "Religion within the Bounds of Bare Reason"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1215763 .
+
+:RuleOfStAugustine a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Augustine ;
+    :creationYear "423"^^xsd:int ;
+    :externalId "Q644892"^^xsd:string ;
+    :title "Rule of St. Augustine"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q644892 .
+
+:RulesForTheDirectionOfTheMind a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Descartes ;
+    :externalId "Q1206702"^^xsd:string ;
+    :title "Rules for the Direction of the Mind"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1206702 .
+
+:RussellEinsteinManifesto a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Russell ;
+    :creationYear "1955"^^xsd:int ;
+    :externalId "Q331878"^^xsd:string ;
+    :title "Russell–Einstein Manifesto"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q331878 .
+
+:ScienceOfLogic a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Hegel ;
+    :creationYear "1812"^^xsd:int ;
+    :externalId "Q374811"^^xsd:string ;
+    :title "Science of Logic"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q374811 .
+
+:SomeThoughtsConcerningEducation a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Locke ;
+    :externalId "Q2471642"^^xsd:string ;
+    :title "Some Thoughts Concerning Education"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q2471642 .
+
+:Symposium a :Dialogue,
+        owl:NamedIndividual ;
+    :createdBy :Plato ;
+    :externalId "Q486727"^^xsd:string ;
+    :title "Symposium"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q486727 .
+
+:ThOdicE a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Leibniz ;
+    :creationYear "1710"^^xsd:int ;
+    :externalId "Q2166858"^^xsd:string ;
+    :title "Théodicée"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q2166858 .
+
+:TheAntichrist a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Nietzsche ;
+    :creationYear "1889"^^xsd:int ;
+    :externalId "Q538396"^^xsd:string ;
+    :title "The Antichrist"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q538396 .
+
+:TheArtOfBeingRight a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Schopenhauer ;
+    :creationYear "1864"^^xsd:int ;
+    :externalId "Q432196"^^xsd:string ;
+    :title "The Art of Being Right"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q432196 .
+
+:TheBirthOfTragedy a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Nietzsche ;
+    :creationYear "1872"^^xsd:int ;
+    :externalId "Q1053359"^^xsd:string ;
+    :title "The Birth of Tragedy"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1053359 .
+
+:TheCityOfGod a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Augustine ;
+    :externalId "Q212318"^^xsd:string ;
+    :title "The City of God"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q212318 .
+
+:TheCommunistManifesto a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Marx ;
+    :creationYear "1848"^^xsd:int ;
+    :externalId "Q40591"^^xsd:string ;
+    :title "The Communist Manifesto"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q40591 .
+
+:TheConceptOfAnxiety a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Kierkegaard ;
+    :creationYear "1844"^^xsd:int ;
+    :externalId "Q1192442"^^xsd:string ;
+    :title "The Concept of Anxiety"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1192442 .
+
+:TheEighteenthBrumaireOfLouisBonaparte a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Marx ;
+    :creationYear "1852"^^xsd:int ;
+    :externalId "Q1198259"^^xsd:string ;
+    :title "The Eighteenth Brumaire of Louis Bonaparte"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1198259 .
+
+:TheFlies a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Sartre ;
+    :creationYear "1947"^^xsd:int ;
+    :externalId "Q1212496"^^xsd:string ;
+    :title "The Flies"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1212496 .
+
+:TheGermanIdeology a :Work,
+        owl:NamedIndividual ;
+    :createdBy :Marx ;
+    :externalId "Q470600"^^xsd:string ;
+    :title "The German Ideology"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q470600 .
+
+:TheMetaphysicsOfMorals a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Kant ;
+    :creationYear "1797"^^xsd:int ;
+    :externalId "Q1214817"^^xsd:string ;
+    :title "The Metaphysics of Morals"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1214817 .
+
+:TheOriginsOfTotalitarianism a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Arendt ;
+    :creationYear "1951"^^xsd:int ;
+    :externalId "Q1327843"^^xsd:string ;
+    :title "The Origins of Totalitarianism"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1327843 .
+
+:ThePovertyOfPhilosophy a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Marx ;
+    :creationYear "1847"^^xsd:int ;
+    :externalId "Q1167658"^^xsd:string ;
+    :title "The Poverty of Philosophy"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1167658 .
+
+:TheSicknessUntoDeath a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Kierkegaard ;
+    :creationYear "1849"^^xsd:int ;
+    :externalId "Q1214072"^^xsd:string ;
+    :title "The Sickness Unto Death"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1214072 .
+
+:TheSubjectionOfWomen a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Mill ;
+    :creationYear "1869"^^xsd:int ;
+    :externalId "Q3407659"^^xsd:string ;
+    :title "The Subjection of Women"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q3407659 .
+
+:TheWall a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Sartre ;
+    :creationYear "1939"^^xsd:int ;
+    :externalId "Q2398227"^^xsd:string ;
+    :title "The Wall"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q2398227 .
+
+:TheWords a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Sartre ;
+    :creationYear "1964"^^xsd:int ;
+    :externalId "Q477028"^^xsd:string ;
+    :title "The Words"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q477028 .
+
+:ThesesOnFeuerbach a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Marx ;
+    :creationYear "1845"^^xsd:int ;
+    :externalId "Q623153"^^xsd:string ;
+    :title "Theses on Feuerbach"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q623153 .
+
+:Timaeus a :Dialogue,
+        owl:NamedIndividual ;
+    :composedDuring :ClassicalGreece ;
+    :createdBy :Plato ;
+    :creationYear "-361"^^xsd:int ;
+    :externalId "Q371884"^^xsd:string ;
+    :title "Timaeus"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q371884 .
+
+:TractatusDeIntellectusEmendatione a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Spinoza ;
+    :creationYear "1677"^^xsd:int ;
+    :externalId "Q1044508"^^xsd:string ;
+    :title "Tractatus de Intellectus Emendatione"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1044508 .
+
+:TractatusPoliticus a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Spinoza ;
+    :creationYear "1677"^^xsd:int ;
+    :externalId "Q1228496"^^xsd:string ;
+    :title "Tractatus Politicus"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1228496 .
+
+:TractatusTheologicoPoliticus a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Spinoza ;
+    :creationYear "1670"^^xsd:int ;
+    :externalId "Q970102"^^xsd:string ;
+    :title "Tractatus Theologico-Politicus"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q970102 .
+
+:TwilightOfTheIdols a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Nietzsche ;
+    :creationYear "1889"^^xsd:int ;
+    :externalId "Q1296318"^^xsd:string ;
+    :title "Twilight of the Idols"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1296318 .
+
+:TwoTreatisesOfGovernment a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :EarlyModernPeriod ;
+    :createdBy :Locke ;
+    :creationYear "1690"^^xsd:int ;
+    :externalId "Q231949"^^xsd:string ;
+    :title "Two Treatises of Government"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q231949 .
+
+:Utilitarianism a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :NineteenthCentury ;
+    :createdBy :Mill ;
+    :creationYear "1861"^^xsd:int ;
+    :externalId "Q1197767"^^xsd:string ;
+    :title "Utilitarianism"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q1197767 .
+
+:WhyIAmNotAChristian a :Work,
+        owl:NamedIndividual ;
+    :composedDuring :TwentiethCentury ;
+    :createdBy :Russell ;
+    :creationYear "1957"^^xsd:int ;
+    :externalId "Q164543"^^xsd:string ;
+    :title "Why I Am Not a Christian"^^xsd:string ;
+    prov:wasDerivedFrom wd:Q164543 .
+
+:ZenoOfCitium :influencedBy :Socrates .
+
+:AlbertusMagnus :influencedBy :Augustine .
+
+:Arendt :influencedBy :Aristotle,
+        :Augustine,
+        :Heidegger,
+        :Husserl,
+        :Kant,
+        :Kierkegaard,
+        :Marx,
+        :Plato,
+        :Socrates .
+
+:Heidegger :influencedBy :Aquinas,
+        :Brentano,
+        :Husserl,
+        :Kant,
+        :Nietzsche,
+        :Plato .
+
+:Wittgenstein :influencedBy :Kierkegaard,
+        :Russell .
+
+:Aquinas :influencedBy :AlbertusMagnus,
+        :Augustine,
+        :Plato .
+
+:Husserl :influencedBy :Brentano,
+        :Kant .
+
+:Schopenhauer :influencedBy :Hume,
+        :Locke,
+        :Plato,
+        :Spinoza .
+
+:Leibniz :influencedBy :Aquinas,
+        :Aristotle,
+        :Augustine,
+        :Descartes,
+        :Plato,
+        :Spinoza,
+        :Thomasius .
+
+:Russell :influencedBy :Hume,
+        :Leibniz,
+        :Mill,
+        :Spinoza,
+        :Wittgenstein .
+
+:Sartre :influencedBy :Hegel,
+        :Marx .
+
+:Descartes :influencedBy :Aquinas,
+        :Aristotle,
+        :Plato .
+
+:Hegel :influencedBy :Aristotle,
+        :Descartes,
+        :Plato,
+        :Spinoza .
+
+:Kierkegaard :influencedBy :Aristotle,
+        :Hegel,
+        :Kant .
+
+:Nietzsche :influencedBy :Aristotle,
+        :Hegel,
+        :Kant,
+        :Leibniz,
+        :Plato,
+        :Socrates,
+        :Spinoza .
+
+:Spinoza :influencedBy :Aristotle,
+        :Plato .
+
+:Kant :influencedBy :Berkeley,
+        :Descartes,
+        :Leibniz,
+        :Locke,
+        :Plato,
+        :Spinoza .
+
+:Aristotle :influencedBy :Plato,
+        :Socrates .
+
+:Plato :influencedBy :Socrates .
+
+
+# All works, curated and generated, are pairwise distinct.
+[] a owl:AllDifferent ;
+   owl:distinctMembers (
+      :BeingAndNothingness
+      :BeingAndTime
+      :Capital
+      :CommentaryOnMetaphysics
+      :CritiquePureReason
+      :EnquiryHumanUnderstanding
+      :EnquiryIntoPlants
+      :EssayHumanUnderstanding
+      :Ethics
+      :Groundwork
+      :HumanCondition
+      :LogicalInvestigations
+      :Meditations
+      :Meno
+      :Metaphysics
+      :Monadology
+      :NicomacheanEthics
+      :OnLiberty
+      :Phaedo
+      :PhenomenologyOfSpirit
+      :PhilosophicalInvestigations
+      :ProblemsOfPhilosophy
+      :Prolegomena
+      :Republic
+      :SummaTheologiae
+      :Tractatus
+      :TreatiseHumanNature
+      :TruthAndMethod
+      :WorldAsWill
+      :Zarathustra
+      :AHistoryOfWesternPhilosophy
+      :WhyIAmNotAChristian
+      :InPraiseOfIdlenessAndOtherEssays
+      :OnDenoting
+      :RussellEinsteinManifesto
+      :MarriageAndMorals
+      :TractatusDeIntellectusEmendatione
+      :TractatusPoliticus
+      :TractatusTheologicoPoliticus
+      :DialoguesConcerningNaturalReligion
+      :OnTheFourfoldRootOfThePrincipleOfSufficientReason
+      :TheArtOfBeingRight
+      :ParergaAndParalipomena
+      :Utilitarianism
+      :TheSubjectionOfWomen
+      :TheOriginsOfTotalitarianism
+      :EichmannInJerusalem
+      :EitherOr
+      :PhilosophicalFragments
+      :TheConceptOfAnxiety
+      :FearAndTrembling
+      :TheSicknessUntoDeath
+      :DeLiberoArbitrio
+      :OnTheTrinity
+      :TheCityOfGod
+      :Confessions
+      :DeDoctrinaChristiana
+      :RuleOfStAugustine
+      :ATreatiseConcerningThePrinciplesOfHumanKnowledge
+      :Gorgias
+      :Crito
+      :Apology
+      :Timaeus
+      :Symposium
+      :Phaedrus
+      :Euthyphro
+      :Physics
+      :OnTheSoul
+      :HistoryOfAnimals
+      :Poetics
+      :ConstitutionOfTheAthenians
+      :Organon
+      :Politics
+      :ThOdicE
+      :NewEssaysOnHumanUnderstanding
+      :DiscourseOnMetaphysics
+      :ThePovertyOfPhilosophy
+      :TheEighteenthBrumaireOfLouisBonaparte
+      :CritiqueOfTheGothaProgram
+      :EconomicAndPhilosophicManuscriptsOf1844
+      :TheCommunistManifesto
+      :TheGermanIdeology
+      :ThesesOnFeuerbach
+      :PrinciplesOfPhilosophy
+      :RulesForTheDirectionOfTheMind
+      :PassionsOfTheSoul
+      :LaGOmTrie
+      :DiscourseOnTheMethod
+      :LecturesOnThePhilosophyOfHistory
+      :ElementsOfThePhilosophyOfRight
+      :ScienceOfLogic
+      :EncyclopediaOfThePhilosophicalSciences
+      :CritiqueOfJudgment
+      :TheMetaphysicsOfMorals
+      :ReligionWithinTheBoundsOfBareReason
+      :PerpetualPeace
+      :AnsweringTheQuestionWhatIsEnlightenment
+      :CritiqueOfPracticalReason
+      :TwoTreatisesOfGovernment
+      :SomeThoughtsConcerningEducation
+      :ALetterConcerningToleration
+      :TheBirthOfTragedy
+      :GayScience
+      :TwilightOfTheIdols
+      :OnTheGenealogyOfMorality
+      :TheAntichrist
+      :BeyondGoodAndEvil
+      :EcceHomo
+      :TheFlies
+      :DirtyHands
+      :ExistentialismAndHumanism
+      :TheWall
+      :TheWords
+      :Nausea
+      :NoExit
+      :OnCertainty
+   ) .
