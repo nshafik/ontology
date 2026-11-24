@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Sources - Philosophy Ontology{% endblock %}
+{% block body %}
+<h1>Imported source records</h1>
+<p class="sub">
+  Metadata fetched from external providers (SEP, Wikidata, Open Library, VIAF,
+  Pleiades, Perseus and others) by <code>app/ingest_sources.py</code>, stored in
+  <code>{{ path }}</code> as PROV-O / Dublin Core records. They are deliberately
+  kept out of the reasoning bundle: a catalogue entry is evidence for curation,
+  not a reviewed philosophical claim.
+</p>
+
+{% if not records %}
+<div class="panel">
+  <p>No records imported yet. Fetch a bounded sample with:</p>
+  <pre>python3 app/ingest_sources.py --source sep openlibrary viaf perseus --query "Plato" --limit 2
+python3 app/ingest_sources.py --source pleiades --query "Athens" --limit 2 --append</pre>
+</div>
+{% else %}
+<div class="panel" style="padding:0;overflow-x:auto">
+<table>
+  <tr><th>Title</th><th>Provider</th><th>Type</th><th>Creator / date</th><th>Query</th></tr>
+  {% for r in records %}
+  <tr>
+    <td><a href="{{ r.url }}" rel="noopener noreferrer" target="_blank">{{ r.title }}</a></td>
+    <td>{{ r.publisher }}</td>
+    <td><span class="tag">{{ r.type }}</span></td>
+    <td class="muted">{{ r.creator or '' }}{% if r.date %} &middot; {{ r.date }}{% endif %}</td>
+    <td class="muted">{{ r.subject or '' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+{% endblock %}

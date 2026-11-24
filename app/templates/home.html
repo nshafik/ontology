@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Philosophy and Intellectual History Curation</h1>
+<p class="sub">
+  An OWL 2 DL ontology of philosophers, their works, the schools they belong to,
+  and the engagements through which one work criticises, praises or discusses
+  another. Served from
+  {% if live %}<a href="http://localhost:3030/#/dataset/philosophy/query">Apache Jena Fuseki</a>{% else %}a local RDFLib graph{% endif %}
+  over SPARQL 1.1.
+</p>
+
+<div class="grid g3">
+  {% for label, value in stats.items() %}
+    <div class="stat"><b>{{ value }}</b><span>{{ label }}</span></div>
+  {% endfor %}
+</div>
+
+<h2>Browse</h2>
+<div class="cqlist">
+  <a href="/browse/philosophers">Philosophers</a>
+  <a href="/browse/works">Works</a>
+  <a href="/browse/schools">Schools of thought</a>
+  <a href="/browse/concepts">Concepts</a>
+  <a href="/browse/readers">Readers</a>
+</div>
+
+<h2>Competency questions</h2>
+<p class="muted">
+  The fifteen questions the ontology was designed to answer, plus the two
+  derivation rules and the data-gap probe. Each runs live against the endpoint.
+</p>
+<div class="cqlist">
+  {% for cq in cqs %}<a href="/cq/{{ cq.id }}" title="{{ cq.question }}">{{ cq.id }}</a>{% endfor %}
+</div>
+
+<h2>Applications</h2>
+<div class="grid g2">
+  <div class="panel">
+    <strong>Ask a question</strong>
+    <p class="muted">
+      Natural-language questions routed to one of the reviewed competency
+      queries. An optional LLM chooses the query and entity from closed lists;
+      it never writes SPARQL. Answers cite the returned rows.
+    </p>
+    <a href="/ask">Open &rarr;</a>
+  </div>
+  <div class="panel">
+    <strong>Ontology and provenance</strong>
+    <p class="muted">
+      Class hierarchy, property domains, ranges and characteristics read from
+      the Turtle, plus imported external-source records kept apart from the
+      curated graph.
+    </p>
+    <a href="/ontology">Ontology &rarr;</a> &nbsp; <a href="/sources">Sources &rarr;</a>
+  </div>
+  <div class="panel">
+    <strong>Recommendations</strong>
+    <p class="muted">
+      Ranks unread works against a reader's stated interests and shows the
+      engagement evidence behind every suggestion. Combines CQ12 and CQ13 with
+      a scoring layer that neither OWL nor SPARQL can express.
+    </p>
+    <a href="/recommend">Open &rarr;</a>
+  </div>
+  <div class="panel">
+    <strong>Visualisations</strong>
+    <p class="muted">
+      Teaching lineage and engagement networks as interactive graphs, plus
+      impact, timeline, school-size and stance charts driven by live queries.
+    </p>
+    <a href="/visualise">Open &rarr;</a>
+  </div>
+</div>
+{% endblock %}

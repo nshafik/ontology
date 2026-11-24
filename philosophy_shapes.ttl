@@ -1,0 +1,112 @@
+@prefix :     <http://example.org/philosophy#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+
+###############################################################################
+#  SHACL shapes for the philosophy ontology (run with pyshacl).
+#
+#  These cover what OWL cannot express: minimum counts (OWL's open-world
+#  assumption never reports a missing value), value ordering and cycles.
+#
+#  Year comparison: years are xsd:int (BCE negative), which is a numeric type
+#  with a total order, so the constraints compare them directly with < and >.
+#  An earlier revision stored years as xsd:gYear and had to cast every value
+#  with xsd:integer(STR(...)); that cast is gone now that the datatype is
+#  numeric. Full IRIs are used inside the queries, so no sh:prefixes
+#  declaration is needed.
+#
+#  Usage:  pyshacl -s philosophy_shapes.ttl -e philosophy_ontology.ttl
+#                  -i rdfs philosophy_dataset.ttl
+###############################################################################
+
+<http://example.org/philosophy-shapes> a owl:Ontology ;
+    rdfs:label "Philosophy ontology SHACL shapes"@en .
+
+# ---- Philosopher -----------------------------------------------------------
+:PhilosopherShape a sh:NodeShape ;
+    sh:targetClass :Philosopher ;
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ;
+                  sh:message "Every philosopher needs a label." ] ;
+    sh:property [ sh:path :birthYear ; sh:maxCount 1 ; sh:datatype xsd:int ;
+                  sh:message "At most one birthYear, typed xsd:int." ] ;
+    sh:property [ sh:path :deathYear ; sh:maxCount 1 ; sh:datatype xsd:int ;
+                  sh:message "At most one deathYear, typed xsd:int." ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "deathYear must not be earlier than birthYear." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#birthYear> ?b ; <http://example.org/philosophy#deathYear> ?d . FILTER (?d < ?b) }"
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "studiedUnder must not form a cycle (a philosopher cannot be their own teaching ancestor)." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#studiedUnder>+ $this }"
+    ] .
+
+# ---- Work ------------------------------------------------------------------
+:WorkShape a sh:NodeShape ;
+    sh:targetClass :Work ;
+    sh:property [ sh:path :title ; sh:minCount 1 ; sh:datatype xsd:string ;
+                  sh:message "Every work needs a title." ] ;
+    sh:property [ sh:path :createdBy ; sh:minCount 1 ; sh:severity sh:Warning ;
+                  sh:message "Work has no creator (acceptable only for anonymous works)." ] ;
+    sh:property [ sh:path :creationYear ; sh:maxCount 1 ; sh:datatype xsd:int ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "A work must not reference itself." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#references> $this }"
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:severity sh:Warning ;
+        sh:message "A work references a work created later than itself." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#references> ?t ; <http://example.org/philosophy#creationYear> ?a . ?t <http://example.org/philosophy#creationYear> ?b . FILTER (?b > ?a) }"
+    ] .
+
+# ---- Engagement ------------------------------------------------------------
+:EngagementShape a sh:NodeShape ;
+    sh:targetClass :Engagement ;
+    sh:property [ sh:path :fromWork ; sh:minCount 1 ; sh:maxCount 1 ; sh:class :Work ] ;
+    sh:property [ sh:path :toWork ; sh:minCount 1 ; sh:maxCount 1 ; sh:class :Work ] ;
+    sh:property [ sh:path :aboutConcept ; sh:minCount 1 ; sh:maxCount 1 ; sh:class :Concept ] ;
+    sh:property [ sh:path :stance ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:in ( "praises" "criticizes" "neutral" ) ] ;
+    sh:property [ sh:path :confidenceScore ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:decimal ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "An engagement must link two different works." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#fromWork> ?w ; <http://example.org/philosophy#toWork> ?w }"
+    ] .
+
+# ---- SchoolOfThought -------------------------------------------------------
+:SchoolShape a sh:NodeShape ;
+    sh:targetClass :SchoolOfThought ;
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "subSchoolOf must not form a cycle." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#subSchoolOf>+ $this }"
+    ] .
+
+# ---- TimePeriod ------------------------------------------------------------
+:TimePeriodShape a sh:NodeShape ;
+    sh:targetClass :TimePeriod ;
+    sh:property [ sh:path :startYear ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:int ] ;
+    sh:property [ sh:path :endYear ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:int ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "endYear must not be earlier than startYear." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#startYear> ?s ; <http://example.org/philosophy#endYear> ?e . FILTER (?e < ?s) }"
+    ] .
+
+# ---- Location --------------------------------------------------------------
+:LocationShape a sh:NodeShape ;
+    sh:targetClass :Location ;
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "locatedIn must not form a cycle." ;
+        sh:select "SELECT $this WHERE { $this <http://example.org/philosophy#locatedIn>+ $this }"
+    ] .

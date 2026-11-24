@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ label }} - Philosophy Ontology{% endblock %}
+{% block body %}
+<h1>{{ label }}</h1>
+<p class="sub">
+  <code>{{ iri }}</code><br>
+  This page is competency question CQ15 (<code>DESCRIBE</code>) rendered for a browser,
+  plus the incoming triples a bare DESCRIBE omits.
+</p>
+
+<h2>Outgoing <span class="muted" style="font-weight:400">&mdash; {{ outgoing|length }} triples</span></h2>
+<div class="panel" style="padding:0">
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  {% for row in outgoing %}
+  <tr>
+    <td><code>{{ row.p.value | short }}</code></td>
+    <td>
+      {% if row.o.type == 'uri' and '#' in row.o.value %}
+        <a href="/entity/{{ row.o.value.split('#')[1] }}">{{ row.o.value | short }}</a>
+      {% elif row.o.type == 'uri' %}
+        <a href="{{ row.o.value }}" rel="noopener">{{ row.o.value }}</a>
+      {% else %}{{ row.o.value }}{% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<h2>Incoming <span class="muted" style="font-weight:400">&mdash; {{ incoming|length }} triples</span></h2>
+{% if not incoming %}<p class="muted">Nothing references this entity.</p>{% else %}
+<div class="panel" style="padding:0">
+<table>
+  <tr><th>Subject</th><th>Property</th></tr>
+  {% for row in incoming %}
+  <tr>
+    <td>
+      {% if '#' in row.s.value %}
+        <a href="/entity/{{ row.s.value.split('#')[1] }}">{{ row.s.value | short }}</a>
+      {% else %}{{ row.s.value }}{% endif %}
+    </td>
+    <td><code>{{ row.p.value | short }}</code></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+{% endblock %}

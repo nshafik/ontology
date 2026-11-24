@@ -1,0 +1,288 @@
+@prefix :       <http://example.org/philosophy#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:   <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms:<http://purl.org/dc/terms/> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix crm:    <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix wd:     <http://www.wikidata.org/entity/> .
+@prefix dbr:    <http://dbpedia.org/resource/> .
+
+###############################################################################
+#  LINKED OPEN DATA LAYER
+#
+#  Implements Linked Data Principle 4 from Week 9, Lecture 9: "Include links
+#  to other URIs, so that they can discover more things." The lecture
+#  distinguishes three kinds of outbound link, and all three appear below:
+#
+#    * Identity links    -> owl:sameAs to Wikidata and DBpedia
+#    * Vocabulary links  -> alignment to FOAF, SKOS, Dublin Core, CIDOC-CRM
+#    * Relationship links-> rdfs:seeAlso to the authority record
+#
+#  PROVENANCE. Every Wikidata QID below was resolved programmatically against
+#  the live Wikidata API on 2026-11-21 and then VERIFIED, not merely matched
+#  by label:
+#    - Philosophers (31/31): candidate items filtered to instance-of human
+#      (P31=Q5), then confirmed by comparing birth year (P569) with the
+#      birthYear asserted in philosophy_dataset.ttl, allowing the one-year
+#      BCE offset between historical and ISO-8601 astronomical numbering.
+#    - Works (30/30): candidate items confirmed by author (P50) pointing at
+#      the already-verified QID of the work's :createdBy philosopher.
+#  Label search alone was NOT trusted: it returns "capital city" for
+#  Capital and "medical ethics" for Ethics. Where several items shared a
+#  label, the one carrying an en.wikipedia sitelink was preferred, because
+#  the others are individual editions and translations rather than the work.
+#
+#  DBpedia IRIs are derived from the en.wikipedia sitelink, which is exactly
+#  how DBpedia mints its resource IRIs. Three works have no en.wikipedia
+#  article, so they carry a Wikidata link only.
+###############################################################################
+
+###############################################################################
+#  1. VOCABULARY LINKS - align local classes with standard vocabularies
+#
+#  Reusing established vocabulary rather than minting everything locally is
+#  the core Linked Data practice (Heath & Bizer 2011, Sec. 4.4.4). The
+#  alignments are deliberately rdfs:subClassOf / subPropertyOf rather than
+#  owl:equivalentClass: our classes are NARROWER than the external ones
+#  (every :Philosopher is a foaf:Person, but not conversely).
+###############################################################################
+
+:Philosopher     rdfs:subClassOf foaf:Person , crm:E21_Person .
+:Work            rdfs:subClassOf crm:E73_Information_Object .
+:Location        rdfs:subClassOf crm:E53_Place .
+:TimePeriod      rdfs:subClassOf crm:E4_Period .
+:Engagement      rdfs:subClassOf crm:E7_Activity .
+:Concept         rdfs:subClassOf skos:Concept .
+:SchoolOfThought rdfs:subClassOf skos:Concept .
+:Reader          rdfs:subClassOf foaf:Person .
+
+# Property alignments.
+:title         rdfs:subPropertyOf dcterms:title .
+:createdBy     rdfs:subPropertyOf dcterms:creator .
+:references    rdfs:subPropertyOf dcterms:references .
+:subSchoolOf   rdfs:subPropertyOf skos:broader .
+:createdIn     rdfs:subPropertyOf dcterms:spatial .
+:composedDuring rdfs:subPropertyOf dcterms:temporal .
+
+###############################################################################
+#  2. IDENTITY LINKS - philosophers (31, all birth-year verified)
+###############################################################################
+
+:AlbertusMagnus        owl:sameAs wd:Q60059 , <http://dbpedia.org/resource/Albertus_Magnus> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q60059> ;
+                       foaf:name "Albertus Magnus" .
+
+:Aquinas               owl:sameAs wd:Q9438 , <http://dbpedia.org/resource/Thomas_Aquinas> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9438> ;
+                       foaf:name "Thomas Aquinas" .
+
+:Arendt                owl:sameAs wd:Q60025 , <http://dbpedia.org/resource/Hannah_Arendt> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q60025> ;
+                       foaf:name "Hannah Arendt" .
+
+:Aristotle             owl:sameAs wd:Q868 , <http://dbpedia.org/resource/Aristotle> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q868> ;
+                       foaf:name "Aristotle" .
+
+:Augustine             owl:sameAs wd:Q8018 , <http://dbpedia.org/resource/Augustine_of_Hippo> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q8018> ;
+                       foaf:name "Augustine of Hippo" .
+
+:Berkeley              owl:sameAs wd:Q82049 , <http://dbpedia.org/resource/George_Berkeley> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q82049> ;
+                       foaf:name "George Berkeley" .
+
+:Brentano              owl:sameAs wd:Q57196 , <http://dbpedia.org/resource/Franz_Brentano> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q57196> ;
+                       foaf:name "Franz Brentano" .
+
+:Descartes             owl:sameAs wd:Q9191 , <http://dbpedia.org/resource/Ren%C3%A9_Descartes> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9191> ;
+                       foaf:name "René Descartes" .
+
+:Gadamer               owl:sameAs wd:Q76356 , <http://dbpedia.org/resource/Hans-Georg_Gadamer> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q76356> ;
+                       foaf:name "Hans-Georg Gadamer" .
+
+:Hegel                 owl:sameAs wd:Q9235 , <http://dbpedia.org/resource/Georg_Wilhelm_Friedrich_Hegel> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9235> ;
+                       foaf:name "Georg Wilhelm Friedrich Hegel" .
+
+:Heidegger             owl:sameAs wd:Q48301 , <http://dbpedia.org/resource/Martin_Heidegger> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q48301> ;
+                       foaf:name "Martin Heidegger" .
+
+:Hume                  owl:sameAs wd:Q37160 , <http://dbpedia.org/resource/David_Hume> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q37160> ;
+                       foaf:name "David Hume" .
+
+:Husserl               owl:sameAs wd:Q58586 , <http://dbpedia.org/resource/Edmund_Husserl> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q58586> ;
+                       foaf:name "Edmund Husserl" .
+
+:Kant                  owl:sameAs wd:Q9312 , <http://dbpedia.org/resource/Immanuel_Kant> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9312> ;
+                       foaf:name "Immanuel Kant" .
+
+:Kierkegaard           owl:sameAs wd:Q6512 , <http://dbpedia.org/resource/S%C3%B8ren_Kierkegaard> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q6512> ;
+                       foaf:name "Søren Kierkegaard" .
+
+:Knutzen               owl:sameAs wd:Q70793 , <http://dbpedia.org/resource/Martin_Knutzen> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q70793> ;
+                       foaf:name "Martin Knutzen" .
+
+:Leibniz               owl:sameAs wd:Q9047 , <http://dbpedia.org/resource/Gottfried_Wilhelm_Leibniz> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9047> ;
+                       foaf:name "Gottfried Wilhelm Leibniz" .
+
+:Locke                 owl:sameAs wd:Q9353 , <http://dbpedia.org/resource/John_Locke> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9353> ;
+                       foaf:name "John Locke" .
+
+:Marx                  owl:sameAs wd:Q9061 , <http://dbpedia.org/resource/Karl_Marx> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9061> ;
+                       foaf:name "Karl Marx" .
+
+:Mill                  owl:sameAs wd:Q50020 , <http://dbpedia.org/resource/John_Stuart_Mill> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q50020> ;
+                       foaf:name "John Stuart Mill" .
+
+:Nietzsche             owl:sameAs wd:Q9358 , <http://dbpedia.org/resource/Friedrich_Nietzsche> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9358> ;
+                       foaf:name "Friedrich Nietzsche" .
+
+:Plato                 owl:sameAs wd:Q859 , <http://dbpedia.org/resource/Plato> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q859> ;
+                       foaf:name "Plato" .
+
+:Russell               owl:sameAs wd:Q33760 , <http://dbpedia.org/resource/Bertrand_Russell> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q33760> ;
+                       foaf:name "Bertrand Russell" .
+
+:Sartre                owl:sameAs wd:Q9364 , <http://dbpedia.org/resource/Jean-Paul_Sartre> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9364> ;
+                       foaf:name "Jean-Paul Sartre" .
+
+:Schopenhauer          owl:sameAs wd:Q38193 , <http://dbpedia.org/resource/Arthur_Schopenhauer> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q38193> ;
+                       foaf:name "Arthur Schopenhauer" .
+
+:Socrates              owl:sameAs wd:Q913 , <http://dbpedia.org/resource/Socrates> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q913> ;
+                       foaf:name "Socrates" .
+
+:Spinoza               owl:sameAs wd:Q35802 , <http://dbpedia.org/resource/Baruch_Spinoza> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q35802> ;
+                       foaf:name "Benedictus de Spinoza" .
+
+:Theophrastus          owl:sameAs wd:Q160362 , <http://dbpedia.org/resource/Theophrastus> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q160362> ;
+                       foaf:name "Theophrastus" .
+
+:Thomasius             owl:sameAs wd:Q67323 , <http://dbpedia.org/resource/Jakob_Thomasius> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q67323> ;
+                       foaf:name "Jakob Thomasius" .
+
+:Wittgenstein          owl:sameAs wd:Q9391 , <http://dbpedia.org/resource/Ludwig_Wittgenstein> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q9391> ;
+                       foaf:name "Ludwig Wittgenstein" .
+
+:ZenoOfCitium          owl:sameAs wd:Q171303 , <http://dbpedia.org/resource/Zeno_of_Citium> ;
+                       rdfs:seeAlso <https://www.wikidata.org/wiki/Q171303> ;
+                       foaf:name "Zeno of Citium" .
+
+###############################################################################
+#  3. IDENTITY LINKS - works (30, all author-verified via P50)
+###############################################################################
+
+:BeingAndNothingness           owl:sameAs wd:Q119709 , <http://dbpedia.org/resource/Being_and_Nothingness> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q119709> .
+
+:BeingAndTime                  owl:sameAs wd:Q404567 , <http://dbpedia.org/resource/Being_and_Time> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q404567> .
+
+:Capital                       owl:sameAs wd:Q58784 , <http://dbpedia.org/resource/Das_Kapital> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q58784> .
+
+:CommentaryOnMetaphysics       owl:sameAs wd:Q113665534 ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q113665534> .
+
+:CritiquePureReason            owl:sameAs wd:Q220002 , <http://dbpedia.org/resource/Critique_of_Pure_Reason> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q220002> .
+
+:EnquiryHumanUnderstanding     owl:sameAs wd:Q1306656 , <http://dbpedia.org/resource/An_Enquiry_Concerning_Human_Understanding> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q1306656> .
+
+:EnquiryIntoPlants             owl:sameAs wd:Q17156420 , <http://dbpedia.org/resource/Historia_Plantarum_(Theophrastus)> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q17156420> .
+
+:EssayHumanUnderstanding       owl:sameAs wd:Q482438 , <http://dbpedia.org/resource/An_Essay_Concerning_Human_Understanding> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q482438> .
+
+:Ethics                        owl:sameAs wd:Q862816 , <http://dbpedia.org/resource/Spinoza's_Ethics> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q862816> .
+
+:Groundwork                    owl:sameAs wd:Q113015922 ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q113015922> .
+
+:HumanCondition                owl:sameAs wd:Q2006866 , <http://dbpedia.org/resource/The_Human_Condition_(Arendt_book)> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q2006866> .
+
+:LogicalInvestigations         owl:sameAs wd:Q3421975 ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q3421975> .
+
+:Meditations                   owl:sameAs wd:Q605790 , <http://dbpedia.org/resource/Meditations_on_First_Philosophy> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q605790> .
+
+:Meno                          owl:sameAs wd:Q746253 , <http://dbpedia.org/resource/Meno> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q746253> .
+
+:Metaphysics                   owl:sameAs wd:Q661655 , <http://dbpedia.org/resource/Metaphysics_(Aristotle)> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q661655> .
+
+:Monadology                    owl:sameAs wd:Q1211539 , <http://dbpedia.org/resource/Monadology> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q1211539> .
+
+:NicomacheanEthics             owl:sameAs wd:Q474537 , <http://dbpedia.org/resource/Nicomachean_Ethics> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q474537> .
+
+:OnLiberty                     owl:sameAs wd:Q1055881 , <http://dbpedia.org/resource/On_Liberty> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q1055881> .
+
+:Phaedo                        owl:sameAs wd:Q244161 , <http://dbpedia.org/resource/Phaedo> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q244161> .
+
+:PhenomenologyOfSpirit         owl:sameAs wd:Q877510 , <http://dbpedia.org/resource/The_Phenomenology_of_Spirit> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q877510> .
+
+:PhilosophicalInvestigations   owl:sameAs wd:Q772496 , <http://dbpedia.org/resource/Philosophical_Investigations> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q772496> .
+
+:ProblemsOfPhilosophy          owl:sameAs wd:Q3393210 , <http://dbpedia.org/resource/The_Problems_of_Philosophy> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q3393210> .
+
+:Prolegomena                   owl:sameAs wd:Q1761342 , <http://dbpedia.org/resource/Prolegomena_to_Any_Future_Metaphysics> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q1761342> .
+
+:Republic                      owl:sameAs wd:Q123397 , <http://dbpedia.org/resource/Republic_(Plato)> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q123397> .
+
+:SummaTheologiae               owl:sameAs wd:Q653871 , <http://dbpedia.org/resource/Summa_Theologica> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q653871> .
+
+:Tractatus                     owl:sameAs wd:Q655717 , <http://dbpedia.org/resource/Tractatus_Logico-Philosophicus> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q655717> .
+
+:TreatiseHumanNature           owl:sameAs wd:Q2451675 , <http://dbpedia.org/resource/A_Treatise_of_Human_Nature> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q2451675> .
+
+:TruthAndMethod                owl:sameAs wd:Q838746 , <http://dbpedia.org/resource/Truth_and_Method> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q838746> .
+
+:WorldAsWill                   owl:sameAs wd:Q560352 , <http://dbpedia.org/resource/The_World_as_Will_and_Representation> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q560352> .
+
+:Zarathustra                   owl:sameAs wd:Q199774 , <http://dbpedia.org/resource/Thus_Spoke_Zarathustra> ;
+                               rdfs:seeAlso <https://www.wikidata.org/wiki/Q199774> .

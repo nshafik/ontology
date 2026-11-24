@@ -1,0 +1,655 @@
+@prefix :     <http://example.org/philosophy#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@base         <http://example.org/philosophy> .
+
+###############################################################################
+#  PHILOSOPHY DATASET v1 - instances for the ontology in philosophy_ontology.ttl
+#  Data only (no ontology header, no owl:imports), so it loads straight into
+#  Fuseki / GraphDB / RDFLib next to the ontology file. For Protege use
+#  philosophy_complete.ttl (ontology + this dataset in one file).
+#
+#  Curated starter set cross-checked against the live Wikidata SPARQL endpoint
+#  (query.wikidata.org, 2026-11-21); see REPORT.md Section 8 for the audit and
+#  for the divergences that were deliberately retained.
+#
+#  Year convention: years are xsd:int, with BCE written as a negative number
+#  (-428 = 428 BCE). xsd:gYear is NOT used: it is outside the OWL 2 datatype
+#  map, so HermiT and Pellet refuse to load an ontology containing it.
+#
+#  BCE numbering: this dataset uses HISTORICAL numbering, where -428 means
+#  428 BCE and there is no year zero. Wikidata serialises dates in ISO-8601
+#  ASTRONOMICAL numbering, which does have a year zero, so Wikidata's
+#  "-0383" is the same instant as our "-384". The two therefore differ by
+#  one for every BCE date; this is a convention offset, not a data error.
+#  See REPORT.md Section 8.
+#
+#  Ancient work years are left out on purpose (uncertain), and some
+#  philosophers/works have no school, to exercise OPTIONAL patterns.
+###############################################################################
+
+# ---- time periods ---
+:ClassicalGreece a :TimePeriod ; rdfs:label "Classical Greece"@en ; :startYear "-500"^^xsd:int ; :endYear "-323"^^xsd:int .
+:MedievalPeriod a :TimePeriod ; rdfs:label "Medieval period"@en ; :startYear "476"^^xsd:int ; :endYear "1453"^^xsd:int .
+:EarlyModernPeriod a :TimePeriod ; rdfs:label "Early modern period"@en ; :startYear "1454"^^xsd:int ; :endYear "1800"^^xsd:int .
+:NineteenthCentury a :TimePeriod ; rdfs:label "Nineteenth century"@en ; :startYear "1801"^^xsd:int ; :endYear "1900"^^xsd:int .
+:TwentiethCentury a :TimePeriod ; rdfs:label "Twentieth century"@en ; :startYear "1901"^^xsd:int ; :endYear "2000"^^xsd:int .
+
+# ---- places ---
+:Greece a :Country ; rdfs:label "Greece"@en .
+:Athens a :City ; rdfs:label "Athens"@en ; :locatedIn :Greece .
+:Prussia a :Country ; rdfs:label "Prussia (historical)"@en .
+:Konigsberg a :City ; rdfs:label "Königsberg"@en ; :locatedIn :Prussia .
+:France a :Country ; rdfs:label "France"@en .
+:Paris a :City ; rdfs:label "Paris"@en ; :locatedIn :France .
+
+# ---- schools ---
+:WesternPhilosophy a :SchoolOfThought ; rdfs:label "Western philosophy"@en .
+:AncientGreekPhilosophy a :SchoolOfThought ; rdfs:label "Ancient Greek philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:Platonism a :SchoolOfThought ; rdfs:label "Platonism"@en ; :subSchoolOf :AncientGreekPhilosophy .
+:Peripatetic a :SchoolOfThought ; rdfs:label "Peripatetic school"@en ; :subSchoolOf :AncientGreekPhilosophy .
+:Stoicism a :SchoolOfThought ; rdfs:label "Stoicism"@en ; :subSchoolOf :AncientGreekPhilosophy .
+:MedievalPhilosophy a :SchoolOfThought ; rdfs:label "Medieval philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:Scholasticism a :SchoolOfThought ; rdfs:label "Scholasticism"@en ; :subSchoolOf :MedievalPhilosophy .
+:Thomism a :SchoolOfThought ; rdfs:label "Thomism"@en ; :subSchoolOf :Scholasticism .
+:EarlyModernPhilosophy a :SchoolOfThought ; rdfs:label "Early modern philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:Rationalism a :SchoolOfThought ; rdfs:label "Rationalism"@en ; :subSchoolOf :EarlyModernPhilosophy .
+:Empiricism a :SchoolOfThought ; rdfs:label "Empiricism"@en ; :subSchoolOf :EarlyModernPhilosophy .
+:ContinentalPhilosophy a :SchoolOfThought ; rdfs:label "Continental philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:GermanIdealism a :SchoolOfThought ; rdfs:label "German idealism"@en ; :subSchoolOf :ContinentalPhilosophy .
+:Phenomenology a :SchoolOfThought ; rdfs:label "Phenomenology"@en ; :subSchoolOf :ContinentalPhilosophy .
+:Existentialism a :SchoolOfThought ; rdfs:label "Existentialism"@en ; :subSchoolOf :ContinentalPhilosophy .
+:AnalyticPhilosophy a :SchoolOfThought ; rdfs:label "Analytic philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+
+# ---- concepts ---
+:TheoryOfForms a :Concept ; rdfs:label "Theory of Forms"@en .
+:FormOfTheGood a :Concept ; rdfs:label "Form of the Good"@en .
+:Causality a :Concept ; rdfs:label "Causality"@en .
+:TranscendentalIdealism a :Concept ; rdfs:label "Transcendental idealism"@en .
+:KantianCategories a :Concept ; rdfs:label "Kantian categories"@en .
+:PictureTheory a :Concept ; rdfs:label "Picture theory of meaning"@en .
+:PhenomenologicalMethod a :Concept ; rdfs:label "Phenomenological method"@en .
+:Being a :Concept ; rdfs:label "Being"@en .
+:BeingTowardDeath a :Concept ; rdfs:label "Being-toward-death"@en .
+
+# ---- philosophers ---
+:Socrates a :Philosopher ;
+    rdfs:label "Socrates"@en ;
+    :birthYear "-470"^^xsd:int ;
+    :deathYear "-399"^^xsd:int ;
+    :externalId "Q913" .
+:Plato a :Philosopher ;
+    rdfs:label "Plato"@en ;
+    :birthYear "-428"^^xsd:int ;
+    :deathYear "-348"^^xsd:int ;
+    :externalId "Q859" ;
+    :studiedUnder :Socrates ;
+    :belongsToSchool :Platonism .
+:Aristotle a :Philosopher ;
+    rdfs:label "Aristotle"@en ;
+    :birthYear "-384"^^xsd:int ;
+    :deathYear "-322"^^xsd:int ;
+    :externalId "Q868" ;
+    :studiedUnder :Plato ;
+    :belongsToSchool :Peripatetic .
+:Theophrastus a :Philosopher ;
+    rdfs:label "Theophrastus"@en ;
+    :birthYear "-371"^^xsd:int ;
+    :deathYear "-287"^^xsd:int ;
+    :externalId "Q160362" ;
+    :studiedUnder :Aristotle ;
+    :belongsToSchool :Peripatetic .
+:ZenoOfCitium a :Philosopher ;
+    rdfs:label "Zeno of Citium"@en ;
+    :birthYear "-334"^^xsd:int ;
+    :deathYear "-262"^^xsd:int ;
+    :externalId "Q171303" ;
+    :belongsToSchool :Stoicism .
+:Augustine a :Philosopher ;
+    rdfs:label "Augustine of Hippo"@en ;
+    :birthYear "354"^^xsd:int ;
+    :deathYear "430"^^xsd:int ;
+    :externalId "Q8018" ;
+    :influencedBy :Plato ;
+    :belongsToSchool :MedievalPhilosophy .
+:AlbertusMagnus a :Philosopher ;
+    rdfs:label "Albertus Magnus"@en ;
+    :birthYear "1200"^^xsd:int ;
+    :deathYear "1280"^^xsd:int ;
+    :externalId "Q60059" ;
+    :belongsToSchool :Scholasticism .
+:Aquinas a :Philosopher ;
+    rdfs:label "Thomas Aquinas"@en ;
+    :birthYear "1225"^^xsd:int ;
+    :deathYear "1274"^^xsd:int ;
+    :externalId "Q9438" ;
+    :studiedUnder :AlbertusMagnus ;
+    :influencedBy :Aristotle ;
+    :belongsToSchool :Thomism .
+:Descartes a :Philosopher ;
+    rdfs:label "René Descartes"@en ;
+    :birthYear "1596"^^xsd:int ;
+    :deathYear "1650"^^xsd:int ;
+    :externalId "Q9191" ;
+    :belongsToSchool :Rationalism .
+:Spinoza a :Philosopher ;
+    rdfs:label "Baruch Spinoza"@en ;
+    :birthYear "1632"^^xsd:int ;
+    :deathYear "1677"^^xsd:int ;
+    :externalId "Q35802" ;
+    :influencedBy :Descartes ;
+    :belongsToSchool :Rationalism .
+:Thomasius a :Philosopher ;
+    rdfs:label "Jakob Thomasius"@en ;
+    :birthYear "1622"^^xsd:int ;
+    :externalId "Q67323" ;
+    :deathYear "1684"^^xsd:int .
+:Leibniz a :Philosopher ;
+    rdfs:label "Gottfried Wilhelm Leibniz"@en ;
+    :birthYear "1646"^^xsd:int ;
+    :deathYear "1716"^^xsd:int ;
+    :externalId "Q9047" ;
+    :studiedUnder :Thomasius ;
+    :belongsToSchool :Rationalism .
+:Locke a :Philosopher ;
+    rdfs:label "John Locke"@en ;
+    :birthYear "1632"^^xsd:int ;
+    :deathYear "1704"^^xsd:int ;
+    :externalId "Q9353" ;
+    :influencedBy :Descartes ;
+    :belongsToSchool :Empiricism .
+:Berkeley a :Philosopher ;
+    rdfs:label "George Berkeley"@en ;
+    :birthYear "1685"^^xsd:int ;
+    :deathYear "1753"^^xsd:int ;
+    :externalId "Q82049" ;
+    :influencedBy :Locke ;
+    :belongsToSchool :Empiricism .
+:Hume a :Philosopher ;
+    rdfs:label "David Hume"@en ;
+    :birthYear "1711"^^xsd:int ;
+    :deathYear "1776"^^xsd:int ;
+    :externalId "Q37160" ;
+    :influencedBy :Locke ;
+    :influencedBy :Berkeley ;
+    :belongsToSchool :Empiricism .
+:Knutzen a :Philosopher ;
+    rdfs:label "Martin Knutzen"@en ;
+    :birthYear "1713"^^xsd:int ;
+    :externalId "Q70793" ;
+    :deathYear "1751"^^xsd:int .
+:Kant a :Philosopher ;
+    rdfs:label "Immanuel Kant"@en ;
+    :birthYear "1724"^^xsd:int ;
+    :deathYear "1804"^^xsd:int ;
+    :externalId "Q9312" ;
+    :studiedUnder :Knutzen ;
+    :influencedBy :Hume ;
+    :belongsToSchool :GermanIdealism .
+:Hegel a :Philosopher ;
+    rdfs:label "Georg Wilhelm Friedrich Hegel"@en ;
+    :birthYear "1770"^^xsd:int ;
+    :deathYear "1831"^^xsd:int ;
+    :externalId "Q9235" ;
+    :influencedBy :Kant ;
+    :belongsToSchool :GermanIdealism .
+:Schopenhauer a :Philosopher ;
+    rdfs:label "Arthur Schopenhauer"@en ;
+    :birthYear "1788"^^xsd:int ;
+    :deathYear "1860"^^xsd:int ;
+    :externalId "Q38193" ;
+    :influencedBy :Kant .
+:Kierkegaard a :Philosopher ;
+    rdfs:label "Søren Kierkegaard"@en ;
+    :birthYear "1813"^^xsd:int ;
+    :deathYear "1855"^^xsd:int ;
+    :externalId "Q6512" ;
+    :belongsToSchool :Existentialism .
+:Mill a :Philosopher ;
+    rdfs:label "John Stuart Mill"@en ;
+    :birthYear "1806"^^xsd:int ;
+    :externalId "Q50020" ;
+    :deathYear "1873"^^xsd:int .
+:Marx a :Philosopher ;
+    rdfs:label "Karl Marx"@en ;
+    :birthYear "1818"^^xsd:int ;
+    :deathYear "1883"^^xsd:int ;
+    :externalId "Q9061" ;
+    :influencedBy :Hegel .
+:Nietzsche a :Philosopher ;
+    rdfs:label "Friedrich Nietzsche"@en ;
+    :birthYear "1844"^^xsd:int ;
+    :deathYear "1900"^^xsd:int ;
+    :externalId "Q9358" ;
+    :influencedBy :Schopenhauer .
+:Brentano a :Philosopher ;
+    rdfs:label "Franz Brentano"@en ;
+    :birthYear "1838"^^xsd:int ;
+    :externalId "Q57196" ;
+    :deathYear "1917"^^xsd:int .
+:Husserl a :Philosopher ;
+    rdfs:label "Edmund Husserl"@en ;
+    :birthYear "1859"^^xsd:int ;
+    :deathYear "1938"^^xsd:int ;
+    :externalId "Q58586" ;
+    :studiedUnder :Brentano ;
+    :belongsToSchool :Phenomenology .
+:Russell a :Philosopher , :Reader ;
+    rdfs:label "Bertrand Russell"@en ;
+    :birthYear "1872"^^xsd:int ;
+    :deathYear "1970"^^xsd:int ;
+    :externalId "Q33760" ;
+    :belongsToSchool :AnalyticPhilosophy ;
+    :hasRead :Tractatus .
+:Heidegger a :Philosopher ;
+    rdfs:label "Martin Heidegger"@en ;
+    :birthYear "1889"^^xsd:int ;
+    :deathYear "1976"^^xsd:int ;
+    :externalId "Q48301" ;
+    # Corrected 2026-11-21: this was "Q8253", which is the Wikidata entity
+    # "fiction". Martin Heidegger is Q48301 (verified against the live endpoint).
+    :externalId "Q48301" ;
+    :studiedUnder :Husserl ;
+    :influencedBy :Aristotle ;
+    :influencedBy :Kierkegaard ;
+    :belongsToSchool :Phenomenology .
+:Wittgenstein a :Philosopher ;
+    rdfs:label "Ludwig Wittgenstein"@en ;
+    :birthYear "1889"^^xsd:int ;
+    :deathYear "1951"^^xsd:int ;
+    :externalId "Q9391" ;
+    :studiedUnder :Russell ;
+    :influencedBy :Schopenhauer ;
+    :belongsToSchool :AnalyticPhilosophy .
+:Sartre a :Philosopher ;
+    rdfs:label "Jean-Paul Sartre"@en ;
+    :birthYear "1905"^^xsd:int ;
+    :deathYear "1980"^^xsd:int ;
+    :externalId "Q9364" ;
+    :influencedBy :Heidegger ;
+    :influencedBy :Husserl ;
+    :belongsToSchool :Existentialism .
+:Arendt a :Philosopher ;
+    rdfs:label "Hannah Arendt"@en ;
+    :birthYear "1906"^^xsd:int ;
+    :deathYear "1975"^^xsd:int ;
+    :externalId "Q60025" ;
+    :studiedUnder :Heidegger .
+:Gadamer a :Philosopher ;
+    rdfs:label "Hans-Georg Gadamer"@en ;
+    :birthYear "1900"^^xsd:int ;
+    :deathYear "2002"^^xsd:int ;
+    :externalId "Q76356" ;
+    :studiedUnder :Heidegger .
+
+# ---- works ---
+:Republic a :Dialogue ;
+    :title "Republic" ;
+    :createdBy :Plato ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Platonism .
+:Phaedo a :Dialogue ;
+    :title "Phaedo" ;
+    :createdBy :Plato ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Platonism .
+:Meno a :Dialogue ;
+    :title "Meno" ;
+    :createdBy :Plato ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Platonism .
+:Metaphysics a :Treatise ;
+    :title "Metaphysics" ;
+    :createdBy :Aristotle ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Peripatetic .
+:NicomacheanEthics a :Treatise ;
+    :title "Nicomachean Ethics" ;
+    :createdBy :Aristotle ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Peripatetic .
+:EnquiryIntoPlants a :Treatise ;
+    :title "Enquiry into Plants" ;
+    :createdBy :Theophrastus ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Peripatetic .
+:CommentaryOnMetaphysics a :Commentary ;
+    :title "Commentary on Aristotle’s Metaphysics" ;
+    :createdBy :Aquinas ;
+    :composedDuring :MedievalPeriod ;
+    :belongsToSchool :Thomism ;
+    :cites :Metaphysics .
+:SummaTheologiae a :Treatise ;
+    :title "Summa Theologiae" ;
+    :createdBy :Aquinas ;
+    :composedDuring :MedievalPeriod ;
+    :creationYear "1265"^^xsd:int ;
+    :belongsToSchool :Thomism .
+:Meditations a :Treatise ;
+    :title "Meditations on First Philosophy" ;
+    :createdBy :Descartes ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1641"^^xsd:int ;
+    :belongsToSchool :Rationalism .
+:Ethics a :Treatise ;
+    :title "Ethics" ;
+    :createdBy :Spinoza ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1677"^^xsd:int ;
+    :belongsToSchool :Rationalism .
+:Monadology a :Essay ;
+    :title "Monadology" ;
+    :createdBy :Leibniz ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1714"^^xsd:int ;
+    :belongsToSchool :Rationalism .
+:EssayHumanUnderstanding a :Treatise ;
+    :title "An Essay Concerning Human Understanding" ;
+    :createdBy :Locke ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1689"^^xsd:int ;
+    :belongsToSchool :Empiricism .
+:TreatiseHumanNature a :Treatise ;
+    :title "A Treatise of Human Nature" ;
+    :createdBy :Hume ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1739"^^xsd:int ;
+    :belongsToSchool :Empiricism .
+:EnquiryHumanUnderstanding a :Treatise ;
+    :title "An Enquiry Concerning Human Understanding" ;
+    :createdBy :Hume ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1748"^^xsd:int ;
+    :belongsToSchool :Empiricism .
+:CritiquePureReason a :Treatise ;
+    :title "Critique of Pure Reason" ;
+    :createdBy :Kant ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1781"^^xsd:int ;
+    :createdIn :Konigsberg ;
+    :belongsToSchool :GermanIdealism .
+:Prolegomena a :Treatise ;
+    :title "Prolegomena to Any Future Metaphysics" ;
+    :createdBy :Kant ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1783"^^xsd:int ;
+    :createdIn :Konigsberg ;
+    :belongsToSchool :GermanIdealism ;
+    :cites :CritiquePureReason .
+:Groundwork a :Treatise ;
+    :title "Groundwork of the Metaphysics of Morals" ;
+    :createdBy :Kant ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1785"^^xsd:int ;
+    :createdIn :Konigsberg ;
+    :belongsToSchool :GermanIdealism .
+:PhenomenologyOfSpirit a :Treatise ;
+    :title "Phenomenology of Spirit" ;
+    :createdBy :Hegel ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1807"^^xsd:int ;
+    :belongsToSchool :GermanIdealism .
+:WorldAsWill a :Treatise ;
+    :title "The World as Will and Representation" ;
+    :createdBy :Schopenhauer ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1818"^^xsd:int .
+:OnLiberty a :Essay ;
+    :title "On Liberty" ;
+    :createdBy :Mill ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1859"^^xsd:int .
+:Capital a :Treatise ;
+    :title "Capital" ;
+    :createdBy :Marx ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1867"^^xsd:int .
+# Typed as :Dialogue rather than bare :Work: it is a narrative composed of
+# speeches and exchanges, not a systematic exposition. Every work in the
+# dataset now has a leaf type, so no individual sits directly under :Work.
+:Zarathustra a :Dialogue ;
+    :title "Thus Spoke Zarathustra" ;
+    :createdBy :Nietzsche ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1883"^^xsd:int .
+:LogicalInvestigations a :Treatise ;
+    :title "Logical Investigations" ;
+    :createdBy :Husserl ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1900"^^xsd:int ;
+    :belongsToSchool :Phenomenology .
+:ProblemsOfPhilosophy a :Essay ;
+    :title "The Problems of Philosophy" ;
+    :createdBy :Russell ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1912"^^xsd:int ;
+    :belongsToSchool :AnalyticPhilosophy .
+:Tractatus a :Treatise ;
+    :title "Tractatus Logico-Philosophicus" ;
+    :createdBy :Wittgenstein ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1921"^^xsd:int ;
+    :belongsToSchool :AnalyticPhilosophy .
+:BeingAndTime a :Treatise ;
+    :title "Being and Time" ;
+    :createdBy :Heidegger ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1927"^^xsd:int ;
+    :belongsToSchool :Phenomenology .
+:BeingAndNothingness a :Treatise ;
+    :title "Being and Nothingness" ;
+    :createdBy :Sartre ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1943"^^xsd:int ;
+    :createdIn :Paris ;
+    :belongsToSchool :Existentialism .
+:PhilosophicalInvestigations a :Treatise ;
+    :title "Philosophical Investigations" ;
+    :createdBy :Wittgenstein ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1953"^^xsd:int ;
+    :belongsToSchool :AnalyticPhilosophy .
+:HumanCondition a :Treatise ;
+    :title "The Human Condition" ;
+    :createdBy :Arendt ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1958"^^xsd:int .
+:TruthAndMethod a :Treatise ;
+    :title "Truth and Method" ;
+    :createdBy :Gadamer ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1960"^^xsd:int .
+
+# ---- engagements ---
+:eng01 a :Engagement ;
+    :fromWork :Metaphysics ; :toWork :Republic ; :aboutConcept :TheoryOfForms ;
+    :stance "criticizes" ; :confidenceScore 0.9 .
+:eng02 a :Engagement ;
+    :fromWork :NicomacheanEthics ; :toWork :Republic ; :aboutConcept :FormOfTheGood ;
+    :stance "criticizes" ; :confidenceScore 0.8 .
+:eng03 a :Engagement ;
+    :fromWork :CritiquePureReason ; :toWork :EnquiryHumanUnderstanding ; :aboutConcept :Causality ;
+    :stance "criticizes" ; :confidenceScore 0.7 .
+:eng04 a :Engagement ;
+    :fromWork :Prolegomena ; :toWork :EnquiryHumanUnderstanding ; :aboutConcept :Causality ;
+    :stance "praises" ; :confidenceScore 0.7 .
+:eng05 a :Engagement ;
+    :fromWork :WorldAsWill ; :toWork :CritiquePureReason ; :aboutConcept :TranscendentalIdealism ;
+    :stance "praises" ; :confidenceScore 0.8 .
+:eng06 a :Engagement ;
+    :fromWork :WorldAsWill ; :toWork :CritiquePureReason ; :aboutConcept :KantianCategories ;
+    :stance "criticizes" ; :confidenceScore 0.85 .
+:eng07 a :Engagement ;
+    :fromWork :PhilosophicalInvestigations ; :toWork :Tractatus ; :aboutConcept :PictureTheory ;
+    :stance "criticizes" ; :confidenceScore 0.95 .
+:eng08 a :Engagement ;
+    :fromWork :BeingAndTime ; :toWork :LogicalInvestigations ; :aboutConcept :PhenomenologicalMethod ;
+    :stance "praises" ; :confidenceScore 0.7 .
+:eng09 a :Engagement ;
+    :fromWork :BeingAndNothingness ; :toWork :BeingAndTime ; :aboutConcept :BeingTowardDeath ;
+    :stance "criticizes" ; :confidenceScore 0.7 .
+:eng10 a :Engagement ;
+    :fromWork :CommentaryOnMetaphysics ; :toWork :Metaphysics ; :aboutConcept :Being ;
+    :stance "neutral" ; :confidenceScore 0.9 .
+
+# ---- readers ---
+:reader1 a :Reader ;
+    rdfs:label "Alice"@en ;
+    :hasInterestIn :Causality ;
+    :hasInterestIn :TranscendentalIdealism ;
+    :hasRead :EnquiryHumanUnderstanding ;
+    :hasRead :CritiquePureReason .
+:reader2 a :Reader ;
+    rdfs:label "Bram"@en ;
+    :hasInterestIn :TheoryOfForms ;
+    :hasInterestIn :PictureTheory ;
+    :hasRead :Republic .
+
+###############################################################################
+#  NAMED INDIVIDUAL DECLARATIONS AND owl:AllDifferent
+#
+#  Mirrors the pattern taught in Week 9, Example #2 (the four string
+#  instruments declared owl:NamedIndividual and then owl:AllDifferent).
+#
+#  Why this matters here. OWL makes NO unique-name assumption: without an
+#  explicit statement, a reasoner is free to conclude that two differently
+#  named individuals are the same thing. That silently breaks every
+#  cardinality inference. Measured on this dataset, :ProlificPhilosopher
+#  (authored min 3 Work) classifies 1 member without the owl:AllDifferent
+#  axiom below and 2 members with it. See REPORT.md Section 6.
+###############################################################################
+
+# --- TimePeriod (5) ---
+:ClassicalGreece a owl:NamedIndividual .
+:EarlyModernPeriod a owl:NamedIndividual .
+:MedievalPeriod a owl:NamedIndividual .
+:NineteenthCentury a owl:NamedIndividual .
+:TwentiethCentury a owl:NamedIndividual .
+
+# --- Country (3) ---
+:France a owl:NamedIndividual . :Greece a owl:NamedIndividual .
+:Prussia a owl:NamedIndividual .
+
+# --- City (3) ---
+:Athens a owl:NamedIndividual . :Konigsberg a owl:NamedIndividual .
+:Paris a owl:NamedIndividual .
+
+# --- SchoolOfThought (16) ---
+:AnalyticPhilosophy a owl:NamedIndividual .
+:AncientGreekPhilosophy a owl:NamedIndividual .
+:ContinentalPhilosophy a owl:NamedIndividual .
+:EarlyModernPhilosophy a owl:NamedIndividual .
+:Empiricism a owl:NamedIndividual . :Existentialism a owl:NamedIndividual .
+:GermanIdealism a owl:NamedIndividual .
+:MedievalPhilosophy a owl:NamedIndividual .
+:Peripatetic a owl:NamedIndividual . :Phenomenology a owl:NamedIndividual .
+:Platonism a owl:NamedIndividual . :Rationalism a owl:NamedIndividual .
+:Scholasticism a owl:NamedIndividual . :Stoicism a owl:NamedIndividual .
+:Thomism a owl:NamedIndividual . :WesternPhilosophy a owl:NamedIndividual .
+
+# --- Concept (9) ---
+:Being a owl:NamedIndividual . :BeingTowardDeath a owl:NamedIndividual .
+:Causality a owl:NamedIndividual . :FormOfTheGood a owl:NamedIndividual .
+:KantianCategories a owl:NamedIndividual .
+:PhenomenologicalMethod a owl:NamedIndividual .
+:PictureTheory a owl:NamedIndividual . :TheoryOfForms a owl:NamedIndividual .
+:TranscendentalIdealism a owl:NamedIndividual .
+
+# --- Philosopher (31) ---
+:AlbertusMagnus a owl:NamedIndividual . :Aquinas a owl:NamedIndividual .
+:Arendt a owl:NamedIndividual . :Aristotle a owl:NamedIndividual .
+:Augustine a owl:NamedIndividual . :Berkeley a owl:NamedIndividual .
+:Brentano a owl:NamedIndividual . :Descartes a owl:NamedIndividual .
+:Gadamer a owl:NamedIndividual . :Hegel a owl:NamedIndividual .
+:Heidegger a owl:NamedIndividual . :Hume a owl:NamedIndividual .
+:Husserl a owl:NamedIndividual . :Kant a owl:NamedIndividual .
+:Kierkegaard a owl:NamedIndividual . :Knutzen a owl:NamedIndividual .
+:Leibniz a owl:NamedIndividual . :Locke a owl:NamedIndividual .
+:Marx a owl:NamedIndividual . :Mill a owl:NamedIndividual .
+:Nietzsche a owl:NamedIndividual . :Plato a owl:NamedIndividual .
+:Russell a owl:NamedIndividual . :Sartre a owl:NamedIndividual .
+:Schopenhauer a owl:NamedIndividual . :Socrates a owl:NamedIndividual .
+:Spinoza a owl:NamedIndividual . :Theophrastus a owl:NamedIndividual .
+:Thomasius a owl:NamedIndividual . :Wittgenstein a owl:NamedIndividual .
+:ZenoOfCitium a owl:NamedIndividual .
+
+# --- Treatise (22) ---
+:BeingAndNothingness a owl:NamedIndividual .
+:BeingAndTime a owl:NamedIndividual . :Capital a owl:NamedIndividual .
+:CritiquePureReason a owl:NamedIndividual .
+:EnquiryHumanUnderstanding a owl:NamedIndividual .
+:EnquiryIntoPlants a owl:NamedIndividual .
+:EssayHumanUnderstanding a owl:NamedIndividual .
+:Ethics a owl:NamedIndividual . :Groundwork a owl:NamedIndividual .
+:HumanCondition a owl:NamedIndividual .
+:LogicalInvestigations a owl:NamedIndividual .
+:Meditations a owl:NamedIndividual . :Metaphysics a owl:NamedIndividual .
+:NicomacheanEthics a owl:NamedIndividual .
+:PhenomenologyOfSpirit a owl:NamedIndividual .
+:PhilosophicalInvestigations a owl:NamedIndividual .
+:Prolegomena a owl:NamedIndividual . :SummaTheologiae a owl:NamedIndividual .
+:Tractatus a owl:NamedIndividual .
+:TreatiseHumanNature a owl:NamedIndividual .
+:TruthAndMethod a owl:NamedIndividual . :WorldAsWill a owl:NamedIndividual .
+
+# --- Dialogue (4) ---
+:Meno a owl:NamedIndividual . :Phaedo a owl:NamedIndividual .
+:Republic a owl:NamedIndividual . :Zarathustra a owl:NamedIndividual .
+
+# --- Commentary (1) ---
+:CommentaryOnMetaphysics a owl:NamedIndividual .
+
+# --- Essay (3) ---
+:Monadology a owl:NamedIndividual . :OnLiberty a owl:NamedIndividual .
+:ProblemsOfPhilosophy a owl:NamedIndividual .
+
+# --- Engagement (10) ---
+:eng01 a owl:NamedIndividual . :eng02 a owl:NamedIndividual .
+:eng03 a owl:NamedIndividual . :eng04 a owl:NamedIndividual .
+:eng05 a owl:NamedIndividual . :eng06 a owl:NamedIndividual .
+:eng07 a owl:NamedIndividual . :eng08 a owl:NamedIndividual .
+:eng09 a owl:NamedIndividual . :eng10 a owl:NamedIndividual .
+
+# --- Reader (2) ---
+:reader1 a owl:NamedIndividual . :reader2 a owl:NamedIndividual .
+
+# All 109 individuals above are pairwise distinct.
+[] a owl:AllDifferent ;
+   owl:distinctMembers (
+      :ClassicalGreece :EarlyModernPeriod :MedievalPeriod
+      :NineteenthCentury :TwentiethCentury
+      :France :Greece :Prussia
+      :Athens :Konigsberg :Paris
+      :AnalyticPhilosophy :AncientGreekPhilosophy :ContinentalPhilosophy
+      :EarlyModernPhilosophy :Empiricism :Existentialism :GermanIdealism
+      :MedievalPhilosophy :Peripatetic :Phenomenology :Platonism
+      :Rationalism :Scholasticism :Stoicism :Thomism :WesternPhilosophy
+      :Being :BeingTowardDeath :Causality :FormOfTheGood
+      :KantianCategories :PhenomenologicalMethod :PictureTheory
+      :TheoryOfForms :TranscendentalIdealism
+      :AlbertusMagnus :Aquinas :Arendt :Aristotle :Augustine :Berkeley
+      :Brentano :Descartes :Gadamer :Hegel :Heidegger :Hume :Husserl
+      :Kant :Kierkegaard :Knutzen :Leibniz :Locke :Marx :Mill :Nietzsche
+      :Plato :Russell :Sartre :Schopenhauer :Socrates :Spinoza
+      :Theophrastus :Thomasius :Wittgenstein :ZenoOfCitium
+      :BeingAndNothingness :BeingAndTime :Capital :CritiquePureReason
+      :EnquiryHumanUnderstanding :EnquiryIntoPlants
+      :EssayHumanUnderstanding :Ethics :Groundwork :HumanCondition
+      :LogicalInvestigations :Meditations :Metaphysics
+      :NicomacheanEthics :PhenomenologyOfSpirit
+      :PhilosophicalInvestigations :Prolegomena :SummaTheologiae
+      :Tractatus :TreatiseHumanNature :TruthAndMethod :WorldAsWill
+      :Meno :Phaedo :Republic :Zarathustra
+      :CommentaryOnMetaphysics
+      :Monadology :OnLiberty :ProblemsOfPhilosophy
+      :eng01 :eng02 :eng03 :eng04 :eng05 :eng06 :eng07 :eng08 :eng09
+      :eng10
+      :reader1 :reader2
+   ) .

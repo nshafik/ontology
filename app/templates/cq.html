@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ cq.id }} - Philosophy Ontology{% endblock %}
+{% block body %}
+
+<div class="cqlist" style="margin-bottom:20px">
+  {% for c in all_cqs %}
+    <a href="/cq/{{ c.id }}" class="{{ 'on' if c.id == cq.id }}">{{ c.id }}</a>
+  {% endfor %}
+</div>
+
+<h1>{{ cq.id }}. {{ cq.question }}</h1>
+<p class="sub">
+  {% for f in cq.features.split(',') %}<span class="tag">{{ f.strip() }}</span>{% endfor %}
+</p>
+
+<div class="panel">
+  <div class="muted"><strong>Ontology evidence path</strong></div>
+  <code>{{ cq.path }}</code>
+  {% if cq.note %}<p class="why" style="margin-top:10px">{{ cq.note }}</p>{% endif %}
+</div>
+
+{% if cq.params %}
+<form class="panel" method="get" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+  {% for key, value in params.items() %}
+    <label>
+      <div class="muted">{{ key }}</div>
+      <input name="{{ key }}" value="{{ value }}" size="28">
+    </label>
+  {% endfor %}
+  <button type="submit">Run</button>
+  <span class="muted">Edit a parameter and re-run the query.</span>
+</form>
+{% endif %}
+
+<h2>Query</h2>
+<pre>{{ query }}</pre>
+
+<h2>Result
+  <span class="muted" style="font-weight:400">
+    &mdash; {{ rows|length }} row{{ '' if rows|length == 1 else 's' }}
+    (expected {{ cq.endpoint_expected if cq.endpoint_expected is not none else cq.expected }})
+  </span>
+</h2>
+
+{% if error %}
+  <div class="err">{{ error }}</div>
+{% elif not rows %}
+  <p class="muted">No results.</p>
+{% else %}
+<div class="panel" style="padding:0;overflow-x:auto">
+<table>
+  <tr>{% for v in (variables or rows[0].keys()) %}<th>{{ v }}</th>{% endfor %}</tr>
+  {% for row in rows %}
+  <tr>
+    {% for v in (variables or rows[0].keys()) %}
+      {% set cell = row.get(v) %}
+      <td>
+        {% if cell and cell.type == 'uri' and '#' in cell.value %}
+          <a href="/entity/{{ cell.value.split('#')[1] }}">{{ cell.value | short }}</a>
+        {% else %}
+          {{ cell.value if cell else '' }}
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+{% endblock %}

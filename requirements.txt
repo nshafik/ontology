@@ -1,0 +1,5 @@
+rdflib>=7.0
+owlrl>=7.1
+pyshacl>=0.26
+owlready2>=0.45   # HermiT / Pellet in build.py (needs Java)
+Flask>=3.0

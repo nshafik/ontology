@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Recommendations - Philosophy Ontology{% endblock %}
+{% block body %}
+<h1>Recommendations</h1>
+<p class="sub">
+  Unread works ranked against a reader's stated interests. Every suggestion
+  carries the engagement evidence that produced it, so the ranking can be
+  audited rather than taken on trust.
+</p>
+
+<form class="panel" method="get" style="display:flex;gap:12px;align-items:flex-end">
+  <label>
+    <div class="muted">Reader</div>
+    <select name="reader">
+      {% for r in readers %}
+        {% set id = ':' + r.r.value.split('#')[1] %}
+        <option value="{{ id }}" {{ 'selected' if id == reader }}>
+          {{ r.label.value }} ({{ id }})
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit">Recommend</button>
+</form>
+
+<div class="panel">
+  <div class="muted">Interests</div>
+  <div>{{ interests | join(', ') or '-' }}</div>
+  <div class="muted" style="margin-top:10px">Already read</div>
+  <div>{{ already | join(', ') or '-' }}</div>
+</div>
+
+<h2>Ranked results</h2>
+{% if not recs %}
+  <p class="muted">No unread works match this reader's interests.</p>
+{% else %}
+<div class="panel" style="padding:0">
+<table>
+  <tr><th>#</th><th>Score</th><th>Work</th><th>Author</th><th>Why</th></tr>
+  {% for r in recs %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td class="score">{{ '%.2f' % r.score }}</td>
+    <td><a href="/entity/{{ r.work[1:] }}">{{ r.title }}</a></td>
+    <td>{{ r.author }}</td>
+    <td>
+      {% for e in r.evidence %}
+        <div class="why">
+          <code>{{ e.engagement }}</code> {{ e.stance }} on
+          <em>{{ e.concept }}</em> vs {{ e.other_work }},
+          confidence {{ '%g' % e.confidence }}
+          &rarr; +{{ '%.2f' % e.contribution }}
+        </div>
+      {% endfor %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+
+<h2>How the score is computed</h2>
+<div class="panel">
+<pre>score(work) = SUM over supporting engagements of
+                  confidence x stance_weight
+
+stance_weight:  praises 1.0   criticizes 0.8   neutral 0.6</pre>
+<p class="why">
+  Criticism is weighted below praise but well above nothing: a work attacking a
+  concept you care about is still highly relevant to you. That is a judgement
+  call, stated here so it can be disagreed with. Ranking is arithmetic, which
+  is why it lives in Python rather than in OWL or SPARQL.
+</p>
+</div>
+{% endblock %}

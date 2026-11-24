@@ -1,0 +1,106 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/philosophy/source-record/29ae661cd717008cd14c2ec2004087f3578e12dea6bba5e1320ca92eab326658> a prov:Entity ;
+    rdfs:label "πολιτεία"@en ;
+    dcterms:creator "Plato" ;
+    dcterms:date "1554" ;
+    dcterms:identifier "OL51831W" ;
+    dcterms:publisher "Open Library" ;
+    dcterms:source <https://openlibrary.org/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "bibliographic" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://openlibrary.org/works/OL51831W> ;
+    schema:additionalType "openlibrary" ;
+    schema:url <https://openlibrary.org/works/OL51831W> .
+
+<http://example.org/philosophy/source-record/4c2bece7fd51f8208476c6862a8cf05e58fe7540d143289350ca5177ac432ca8> a prov:Entity ;
+    rdfs:label "Epigrammata"@en ;
+    dcterms:identifier "urn:cts:greekLit:tlg1614.tlg001" ;
+    dcterms:publisher "Perseus Digital Library" ;
+    dcterms:source <https://catalog.perseus.org/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "bibliographic" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://catalog.perseus.org/catalog/urn:cts:greekLit:tlg1614.tlg001> ;
+    schema:additionalType "perseus" ;
+    schema:url <https://catalog.perseus.org/catalog/urn:cts:greekLit:tlg1614.tlg001> .
+
+<http://example.org/philosophy/source-record/61b47c3c9c3b2f88cad4bee1466233ed5b20831c921ac5ef0f20972807cf583b> a prov:Entity ;
+    rdfs:label "Platonicus Madaurensis Apuleius, Schriftsteller, Rhetoriker, 124-190"@en ;
+    dcterms:identifier "32115433" ;
+    dcterms:publisher "VIAF" ;
+    dcterms:source <https://viaf.org/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "authority" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://viaf.org/viaf/32115433> ;
+    schema:additionalType "viaf" ;
+    schema:url <https://viaf.org/viaf/32115433> .
+
+<http://example.org/philosophy/source-record/ae5bd295f26b42bc194a430b4b03ab01e743e7b4dac5d65b4fec27695ee0a951> a prov:Entity ;
+    rdfs:label "Plato"@en ;
+    dcterms:identifier "plato" ;
+    dcterms:publisher "Stanford Encyclopedia of Philosophy" ;
+    dcterms:source <https://plato.stanford.edu/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "scholarly-reference" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://plato.stanford.edu/entries/plato/> ;
+    schema:additionalType "sep" ;
+    schema:url <https://plato.stanford.edu/entries/plato/> .
+
+<http://example.org/philosophy/source-record/c63d7353271ee6871e8861b2399ffbc0a1ae3a4f136284180fe83f53d6c3c85c> a prov:Entity ;
+    rdfs:label "Plato ’s Myths"@en ;
+    dcterms:identifier "plato-myths" ;
+    dcterms:publisher "Stanford Encyclopedia of Philosophy" ;
+    dcterms:source <https://plato.stanford.edu/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "scholarly-reference" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://plato.stanford.edu/entries/plato-myths/> ;
+    schema:additionalType "sep" ;
+    schema:url <https://plato.stanford.edu/entries/plato-myths/> .
+
+<http://example.org/philosophy/source-record/d74116c52d364a839da757c27bfe933fe631f6e21b8ba321180be319cfc085fd> a prov:Entity ;
+    rdfs:label "Ἀπολογία Σωκράτους"@en ;
+    dcterms:creator "Plato" ;
+    dcterms:date "1675" ;
+    dcterms:identifier "OL51948W" ;
+    dcterms:publisher "Open Library" ;
+    dcterms:source <https://openlibrary.org/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "bibliographic" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://openlibrary.org/works/OL51948W> ;
+    schema:additionalType "openlibrary" ;
+    schema:url <https://openlibrary.org/works/OL51948W> .
+
+<http://example.org/philosophy/source-record/dbb5d210336c47936652742d7466d53b54b01935d6a1e416dee103759baf8dd3> a prov:Entity ;
+    rdfs:label "tlg0059"@en ;
+    dcterms:identifier "urn:cts:greekLit:tlg0059" ;
+    dcterms:publisher "Perseus Digital Library" ;
+    dcterms:source <https://catalog.perseus.org/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "bibliographic" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://catalog.perseus.org/catalog/urn:cts:greekLit:tlg0059> ;
+    schema:additionalType "perseus" ;
+    schema:url <https://catalog.perseus.org/catalog/urn:cts:greekLit:tlg0059> .
+
+<http://example.org/philosophy/source-record/e741e5424239e50bb1524f35b6fe9ed9eda93eb4acc7b622199822b506310f2f> a prov:Entity ;
+    rdfs:label "Plato"@en ;
+    dcterms:identifier "108159964" ;
+    dcterms:publisher "VIAF" ;
+    dcterms:source <https://viaf.org/> ;
+    dcterms:subject "Plato" ;
+    dcterms:type "authority" ;
+    prov:generatedAtTime "2026-11-24T08:06:38.222598+00:00"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://viaf.org/viaf/108159964> ;
+    schema:additionalType "viaf" ;
+    schema:url <https://viaf.org/viaf/108159964> .
+

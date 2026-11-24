@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Visualisations - Philosophy Ontology{% endblock %}
+{% block body %}
+<h1>Visualisations</h1>
+<p class="sub">
+  Every figure below is drawn from a live SPARQL query against the endpoint.
+  Nothing is hard-coded, so the views change with the data.
+</p>
+
+<h2>Teaching lineage</h2>
+<p class="muted">
+  The 11 asserted <code>:studiedUnder</code> links. The transitive
+  super-property <code>:hasTeachingAncestor</code> closes these into 19
+  ancestor pairs (CQ2). Drag a node to explore.
+</p>
+<div id="lineage" class="viz"></div>
+
+<h2>Engagement network</h2>
+<p class="legend" style="margin:8px 0 12px">
+  <span><i class="dot" style="background:var(--crit)"></i>criticizes</span>
+  <span><i class="dot" style="background:var(--praise)"></i>praises</span>
+  <span><i class="dot" style="background:var(--neutral)"></i>neutral</span>
+  <span class="muted">edge thickness = confidence score</span>
+</p>
+<div id="engagements" class="viz"></div>
+
+<h2>School hierarchy</h2>
+<div id="schools" class="viz"></div>
+
+<h2>Charts</h2>
+<div class="grid g2">
+  <div class="panel">
+    <strong>Philosopher impact (CQ9)</strong>
+    <p class="muted">Followers plus incoming engagements, top 12.</p>
+    <canvas id="impact" height="230"></canvas>
+  </div>
+  <div class="panel">
+    <strong>Works per period</strong>
+    <canvas id="timeline" height="230"></canvas>
+  </div>
+  <div class="panel">
+    <strong>Philosophers per school</strong>
+    <canvas id="schoolsChart" height="230"></canvas>
+  </div>
+  <div class="panel">
+    <strong>Engagements by stance</strong>
+    <canvas id="stance" height="230"></canvas>
+  </div>
+</div>
+
+<script>
+const netOpts = (hierarchical) => ({
+  nodes: { shape:'box', font:{size:13, face:'-apple-system,Segoe UI,sans-serif'},
+           color:{background:'#eef1fd', border:'#3b5bdb'}, margin:7, borderWidth:1 },
+  edges: { arrows:'to', font:{size:10, align:'middle', color:'#6b6b70',
+           strokeWidth:3, strokeColor:'#fff'}, smooth:{type:'cubicBezier'} },
+  physics: hierarchical ? false : { stabilization:{iterations:220},
+           barnesHut:{springLength:150, gravitationalConstant:-7000} },
+  layout: hierarchical
+    ? { hierarchical:{ direction:'DU', sortMethod:'directed', levelSeparation:85,
+                       nodeSpacing:130 } }
+    : {},
+  interaction: { hover:true, tooltipDelay:150 }
+});
+
+async function network(id, url, hierarchical) {
+  const data = await (await fetch(url)).json();
+  new vis.Network(document.getElementById(id), data, netOpts(hierarchical));
+}
+network('lineage', '/api/graph/lineage', true);
+network('engagements', '/api/graph/engagements', false);
+network('schools', '/api/graph/schools', true);
+
+const AX = { y:{ beginAtZero:true, ticks:{ precision:0 } } };
+
+fetch('/api/chart/impact').then(r => r.json()).then(d => {
+  new Chart(document.getElementById('impact'), {
+    type:'bar',
+    data:{ labels:d.labels, datasets:[
+      { label:'Influenced', data:d.influenced, backgroundColor:'#3b5bdb' },
+      { label:'Engagements', data:d.engagements, backgroundColor:'#9db2f0' }]},
+    options:{ scales:{ x:{ stacked:true, ticks:{ font:{size:10} } },
+                       y:{ stacked:true, beginAtZero:true, ticks:{precision:0} } },
+              plugins:{ legend:{ labels:{ boxWidth:12, font:{size:11} } } } }
+  });
+});
+
+fetch('/api/chart/timeline').then(r => r.json()).then(d => {
+  new Chart(document.getElementById('timeline'), {
+    type:'line',
+    data:{ labels:d.labels, datasets:[{ label:'Works', data:d.counts,
+           fill:true, borderColor:'#3b5bdb', backgroundColor:'rgba(59,91,219,.12)',
+           tension:.3 }]},
+    options:{ scales:AX, plugins:{ legend:{ display:false } } }
+  });
+});
+
+fetch('/api/chart/schools').then(r => r.json()).then(d => {
+  new Chart(document.getElementById('schoolsChart'), {
+    type:'bar',
+    data:{ labels:d.labels, datasets:[{ data:d.counts, backgroundColor:'#3b5bdb' }]},
+    options:{ indexAxis:'y', scales:{ x:{ beginAtZero:true, ticks:{precision:0} } },
+              plugins:{ legend:{ display:false } } }
+  });
+});
+
+fetch('/api/chart/stance').then(r => r.json()).then(d => {
+  const colour = { criticizes:'#c0392b', praises:'#27ae60', neutral:'#7f8c8d' };
+  new Chart(document.getElementById('stance'), {
+    type:'doughnut',
+    data:{ labels:d.labels, datasets:[{ data:d.counts,
+           backgroundColor:d.labels.map(l => colour[l] || '#888') }]},
+    options:{ plugins:{ legend:{ position:'right', labels:{ boxWidth:12,
+              font:{size:11} } } } }
+  });
+});
+</script>
+{% endblock %}

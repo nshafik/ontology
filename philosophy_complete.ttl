@@ -1,0 +1,1221 @@
+###############################################################################
+#  GENERATED FILE - DO NOT EDIT BY HAND.
+#
+#  Built by build.py from:
+#      philosophy_ontology.ttl   (TBox: classes, properties, axioms)
+#      philosophy_dataset.ttl    (ABox: individuals)
+#
+#  This single-file bundle is what you open in Protege. Edit the sources and
+#  re-run `python3 build.py` instead of editing this file.
+#
+#  philosophy_links.ttl (owl:sameAs to Wikidata/DBpedia and the vocabulary
+#  alignments) is deliberately NOT bundled here: owl:sameAs replicates every
+#  inference across all coreferent IRIs, which inflates the OWL-RL closure
+#  from 2,412 to 120,645 triples and reports each defined class three times
+#  over. Load it as a separate graph when you want the LOD links.
+###############################################################################
+
+
+
+# ===========================================================================
+# SOURCE: philosophy_ontology.ttl
+# ===========================================================================
+
+@prefix :      <http://example.org/philosophy#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@base          <http://example.org/philosophy> .
+
+###############################################################################
+#  PHILOSOPHY AND INTELLECTUAL HISTORY CURATION - ONTOLOGY (OWL 2 DL)
+#
+#  Follows the design document: 14 asserted classes, 4 defined classes,
+#  20 object properties (+ the inverse "authored"), 9 data properties.
+#
+#  Not expressible in OWL (handled outside the reasoner, see Section 10):
+#    * "not yet read"  -> SPARQL FILTER NOT EXISTS (open-world assumption)
+#    * criticizes / praises shortcut links from an Engagement's stance:
+#
+#        CONSTRUCT { ?a :criticizes ?b }
+#        WHERE { ?e a :Engagement ; :fromWork ?a ; :toWork ?b ;
+#                   :stance "criticizes" }
+#
+#        CONSTRUCT { ?a :praises ?b }
+#        WHERE { ?e a :Engagement ; :fromWork ?a ; :toWork ?b ;
+#                   :stance "praises" }
+#
+#    * deathYear >= birthYear and minimum counts -> SHACL (pyshacl)
+#
+#  Year convention: all years are xsd:int, with BCE written as a negative
+#  number (e.g. "-428"^^xsd:int means 428 BCE).
+#
+#  Why not xsd:gYear? xsd:gYear is NOT part of the OWL 2 datatype map
+#  (W3C OWL 2 Structural Specification, Sec. 4; Motik et al. 2012). HermiT
+#  and Pellet both abort with UnsupportedDatatypeException on an ontology
+#  that uses it, so the ontology could not be classified in Protege at all.
+#  xsd:int is in the datatype map, orders correctly for BCE negatives, and
+#  removes the xsd:integer(STR(?y)) casts the SHACL shapes previously needed.
+###############################################################################
+
+<http://example.org/philosophy> a owl:Ontology ;
+    rdfs:label "Philosophy and Intellectual History Curation Ontology"@en ;
+    rdfs:comment "Models philosophers, their works, schools of thought, places, periods and readers, and the engagements (criticism, praise, discussion) that connect works across eras."@en ;
+    owl:versionInfo "1.0" .
+
+
+###############################################################################
+#  CLASSES (14 asserted)
+###############################################################################
+
+:Work a owl:Class ;
+    rdfs:label "Work"@en ;
+    rdfs:comment "An intellectual creation, such as a book or essay."@en .
+
+:Treatise a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Treatise"@en ;
+    rdfs:comment "A systematic philosophical exposition."@en .
+
+:Dialogue a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Dialogue"@en ;
+    rdfs:comment "A work written as a dialogue."@en .
+
+:Commentary a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Commentary"@en ;
+    rdfs:comment "A work that interprets or discusses another work."@en .
+
+:Essay a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Essay"@en ;
+    rdfs:comment "A focused philosophical text. Not disjoint from Dialogue."@en .
+
+:Philosopher a owl:Class ;
+    rdfs:label "Philosopher"@en ;
+    rdfs:comment "A thinker who writes works or teaches other philosophers."@en .
+
+:Engagement a owl:Class ;
+    rdfs:label "Engagement"@en ;
+    rdfs:comment "A recorded relationship in which one work engages another about a concept, with a stance."@en .
+
+:Concept a owl:Class ;
+    rdfs:label "Concept"@en ;
+    rdfs:comment "A philosophical concept or thesis."@en .
+
+:SchoolOfThought a owl:Class ;
+    rdfs:label "SchoolOfThought"@en ;
+    rdfs:comment "A tradition or school, which may have sub-schools."@en .
+
+:Location a owl:Class ;
+    rdfs:label "Location"@en ;
+    rdfs:comment "A place with a position in a place hierarchy."@en .
+
+:Country a owl:Class ;
+    rdfs:subClassOf :Location ;
+    rdfs:label "Country"@en ;
+    rdfs:comment "A country."@en .
+
+:City a owl:Class ;
+    rdfs:subClassOf :Location ;
+    rdfs:label "City"@en ;
+    rdfs:comment "A city, located in a country."@en .
+
+:TimePeriod a owl:Class ;
+    rdfs:label "TimePeriod"@en ;
+    rdfs:comment "A span of years, with start and end years."@en .
+
+:Reader a owl:Class ;
+    rdfs:label "Reader"@en ;
+    rdfs:comment "A user with interests and a history of read works. A Philosopher may also be a Reader."@en .
+
+
+###############################################################################
+#  DISJOINTNESS (design document, Section 9)
+#
+#  The design document states that Philosopher, Work, Engagement, Concept,
+#  SchoolOfThought, Location and TimePeriod are PAIRWISE disjoint. An earlier
+#  revision of this file only asserted three of the 21 pairs, so the code was
+#  weaker than the documentation claimed. The owl:AllDisjointClasses axiom
+#  below closes that gap: it is the OWL 2 n-ary form and expands to all 21
+#  pairs, which is far more readable than 21 separate owl:disjointWith lines
+#  (OWL 2 Primer, Sec. 4.2).
+###############################################################################
+
+[] a owl:AllDisjointClasses ;
+   rdfs:comment "The seven top-level categories are mutually exclusive: nothing is both a person and a text, a text and an event, a place and a period, and so on."@en ;
+   owl:members ( :Philosopher :Work :Engagement :Concept :SchoolOfThought
+                 :Location :TimePeriod ) .
+
+# Reader is the one deliberate exception to the block above. It is disjoint
+# from every top-level class EXCEPT Philosopher, because a philosopher is also
+# a reader of other philosophers' works (e.g. :Russell below is both).
+:Reader owl:disjointWith :Work , :Engagement , :Concept , :SchoolOfThought ,
+                         :Location , :TimePeriod .
+
+# A place cannot be both a country and a city.
+:Country owl:disjointWith :City .
+
+# Treatise, Dialogue, Commentary and Essay are intentionally NOT declared
+# disjoint (the document states Essay and Dialogue are not disjoint): a text
+# can reasonably be read as more than one genre at once.
+
+
+###############################################################################
+#  OBJECT PROPERTIES (20, plus the inverse :authored)
+###############################################################################
+
+# ---- authorship ------------------------------------------------------------
+
+:createdBy a owl:ObjectProperty ;
+    rdfs:label "createdBy"@en ;
+    rdfs:comment "Links a work to the philosopher who created it. Inverse: authored."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Philosopher ;
+    owl:inverseOf :authored .
+
+:authored a owl:ObjectProperty ;
+    rdfs:label "authored"@en ;
+    rdfs:comment "Inverse of createdBy: the works of a philosopher."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Work .
+
+# ---- schools ---------------------------------------------------------------
+
+# A single domain axiom with a union. Two separate rdfs:domain axioms would
+# be intersected by the reasoner and wrongly force every subject to be both.
+:belongsToSchool a owl:ObjectProperty ;
+    rdfs:label "belongsToSchool"@en ;
+    rdfs:comment "Associates a work or a philosopher with a school of thought."@en ;
+    rdfs:domain [ a owl:Class ;
+                  owl:unionOf ( :Work :Philosopher ) ] ;
+    rdfs:range :SchoolOfThought .
+
+:subSchoolOf a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "subSchoolOf"@en ;
+    rdfs:comment "Direct sub-school relation. Asymmetric and irreflexive, so it is deliberately not transitive; the transitive closure is isWithinSchool."@en ;
+    rdfs:subPropertyOf :isWithinSchool ;
+    rdfs:domain :SchoolOfThought ;
+    rdfs:range :SchoolOfThought .
+
+:isWithinSchool a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "isWithinSchool"@en ;
+    rdfs:comment "Transitive super-property of subSchoolOf. Used for inference only."@en ;
+    rdfs:domain :SchoolOfThought ;
+    rdfs:range :SchoolOfThought .
+
+# ---- influence and teaching lineage ---------------------------------------
+
+:influencedBy a owl:ObjectProperty , owl:IrreflexiveProperty ;
+    rdfs:label "influencedBy"@en ;
+    rdfs:comment "Intellectual influence. Not transitive, because influence weakens along a chain. studiedUnder is a sub-property."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Philosopher .
+
+:studiedUnder a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "studiedUnder"@en ;
+    rdfs:comment "Direct teacher-pupil link. Asymmetric and irreflexive, so it is deliberately not transitive; the transitive closure is hasTeachingAncestor."@en ;
+    rdfs:subPropertyOf :hasTeachingAncestor , :influencedBy ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Philosopher .
+
+:hasTeachingAncestor a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "hasTeachingAncestor"@en ;
+    rdfs:comment "Transitive super-property of studiedUnder. Used for inference only."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Philosopher .
+
+:createdInLineageOf a owl:ObjectProperty ;
+    rdfs:label "createdInLineageOf"@en ;
+    rdfs:comment "Inferred: createdBy followed by hasTeachingAncestor."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Philosopher ;
+    owl:propertyChainAxiom ( :createdBy :hasTeachingAncestor ) .
+
+# ---- engagement ------------------------------------------------------------
+
+:fromWork a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "fromWork"@en ;
+    rdfs:comment "Source work of an engagement."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range :Work .
+
+:toWork a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "toWork"@en ;
+    rdfs:comment "Target work of an engagement."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range :Work .
+
+:aboutConcept a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "aboutConcept"@en ;
+    rdfs:comment "Concept discussed by the engagement."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range :Concept .
+
+# ---- place and time --------------------------------------------------------
+
+:createdIn a owl:ObjectProperty ;
+    rdfs:label "createdIn"@en ;
+    rdfs:comment "Where a work was created. Inferred up the hierarchy: createdIn followed by locatedIn."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Location ;
+    owl:propertyChainAxiom ( :createdIn :locatedIn ) .
+
+:locatedIn a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "locatedIn"@en ;
+    rdfs:comment "Place hierarchy, for example City to Country."@en ;
+    rdfs:domain :Location ;
+    rdfs:range :Location .
+
+:composedDuring a owl:ObjectProperty ;
+    rdfs:label "composedDuring"@en ;
+    rdfs:comment "Anchors a work in time."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :TimePeriod .
+
+# ---- references (general to specific) -------------------------------------
+
+:references a owl:ObjectProperty ;
+    rdfs:label "references"@en ;
+    rdfs:comment "General reference from one work to another."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+:cites a owl:ObjectProperty ;
+    rdfs:label "cites"@en ;
+    rdfs:comment "Citation of one work by another."@en ;
+    rdfs:subPropertyOf :references ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+:criticizes a owl:ObjectProperty ;
+    rdfs:label "criticizes"@en ;
+    rdfs:comment "Shortcut link derived (by SPARQL CONSTRUCT or SWRL, not OWL) from an engagement with stance criticizes."@en ;
+    rdfs:subPropertyOf :references ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+:praises a owl:ObjectProperty ;
+    rdfs:label "praises"@en ;
+    rdfs:comment "Shortcut link derived (by SPARQL CONSTRUCT or SWRL, not OWL) from an engagement with stance praises."@en ;
+    rdfs:subPropertyOf :references ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+# ---- readers ---------------------------------------------------------------
+
+:hasRead a owl:ObjectProperty ;
+    rdfs:label "hasRead"@en ;
+    rdfs:comment "Reading history. Used to exclude works already read (via FILTER NOT EXISTS)."@en ;
+    rdfs:domain :Reader ;
+    rdfs:range :Work .
+
+:hasInterestIn a owl:ObjectProperty ;
+    rdfs:label "hasInterestIn"@en ;
+    rdfs:comment "Reader preference."@en ;
+    rdfs:domain :Reader ;
+    rdfs:range :Concept .
+
+
+###############################################################################
+#  DATA PROPERTIES (9)
+###############################################################################
+
+:title a owl:DatatypeProperty ;
+    rdfs:label "title"@en ;
+    rdfs:comment "Display title."@en ;
+    rdfs:domain :Work ;
+    rdfs:range xsd:string .
+
+:creationYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "creationYear"@en ;
+    rdfs:comment "Year a work was created. BCE years are negative (see ontology header)."@en ;
+    rdfs:domain :Work ;
+    rdfs:range xsd:int .
+
+:birthYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "birthYear"@en ;
+    rdfs:comment "At most one birth year per philosopher. BCE years are negative."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range xsd:int .
+
+:deathYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "deathYear"@en ;
+    rdfs:comment "At most one death year per philosopher. SHACL checks it is not before birthYear."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range xsd:int .
+
+# Range is the closed set {praises, criticizes, neutral}, so any other value
+# makes the ontology inconsistent when the reasoner runs.
+:stance a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "stance"@en ;
+    rdfs:comment "Stance of an engagement. One of praises, criticizes, neutral."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range [ a rdfs:Datatype ;
+                 owl:oneOf ( "praises" "criticizes" "neutral" ) ] .
+
+# Range is xsd:decimal restricted to the interval [0, 1].
+:confidenceScore a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "confidenceScore"@en ;
+    rdfs:comment "Curator confidence in the engagement, from 0 to 1."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range [ a rdfs:Datatype ;
+                 owl:onDatatype xsd:decimal ;
+                 owl:withRestrictions ( [ xsd:minInclusive 0.0 ]
+                                        [ xsd:maxInclusive 1.0 ] ) ] .
+
+:startYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "startYear"@en ;
+    rdfs:comment "First year of a time period."@en ;
+    rdfs:domain :TimePeriod ;
+    rdfs:range xsd:int .
+
+:endYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "endYear"@en ;
+    rdfs:comment "Last year of a time period."@en ;
+    rdfs:domain :TimePeriod ;
+    rdfs:range xsd:int .
+
+# No domain on purpose: used on any entity for matching across sources.
+:externalId a owl:DatatypeProperty ;
+    rdfs:label "externalId"@en ;
+    rdfs:comment "Wikidata or library authority identifier for entity matching."@en ;
+    rdfs:range xsd:string .
+
+
+###############################################################################
+#  DEFINED CLASSES (4) - members are inferred by the reasoner
+###############################################################################
+
+:StudentThinker a owl:Class ;
+    rdfs:label "StudentThinker"@en ;
+    rdfs:comment "Philosopher who studied under some Philosopher."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty :studiedUnder ;
+              owl:someValuesFrom :Philosopher ] ) ] .
+
+:TeacherThinker a owl:Class ;
+    rdfs:label "TeacherThinker"@en ;
+    rdfs:comment "Philosopher who is the teacher of some Philosopher."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :studiedUnder ] ;
+              owl:someValuesFrom :Philosopher ] ) ] .
+
+:InfluencerThinker a owl:Class ;
+    rdfs:label "InfluencerThinker"@en ;
+    rdfs:comment "Philosopher who has influenced some Philosopher."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :influencedBy ] ;
+              owl:someValuesFrom :Philosopher ] ) ] .
+
+:CriticizedWork a owl:Class ;
+    rdfs:label "CriticizedWork"@en ;
+    rdfs:comment "Work that is the target of a criticizing engagement."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Work
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :toWork ] ;
+              owl:someValuesFrom [ a owl:Class ;
+                  owl:intersectionOf ( :Engagement
+                      [ a owl:Restriction ;
+                        owl:onProperty :stance ;
+                        owl:hasValue "criticizes" ] ) ] ] ) ] .
+
+
+###############################################################################
+#  ADDITIONAL CLASS EXPRESSIONS
+#
+#  Each class below exercises one OWL 2 construct from the Week 9 lecture, on
+#  this domain rather than on the lecture's toy example. The lecture example
+#  that each one mirrors is named in its comment.
+###############################################################################
+
+# --- owl:allValuesFrom + owl:complementOf -----------------------------------
+# Mirrors lecture Example #1 (AvailableBook = Book lent to no Member).
+#
+#   UncriticizedWork == Work  AND  (inverse toWork) ONLY (NOT stance "criticizes")
+#
+# A universal restriction, so it holds vacuously for works with no incoming
+# engagement at all. Note this infers nothing under the open-world assumption
+# for works that DO have engagements unless the engagement set is closed;
+# that behaviour is deliberate and is discussed in REPORT.md Section 6.
+:UncriticizedWork a owl:Class ;
+    rdfs:label "UncriticizedWork"@en ;
+    rdfs:comment "Work for which every incoming engagement, if any, has a stance other than criticizes."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Work
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :toWork ] ;
+              owl:allValuesFrom [ a owl:Class ;
+                  owl:complementOf [ a owl:Restriction ;
+                      owl:onProperty :stance ;
+                      owl:hasValue "criticizes" ] ] ] ) ] .
+
+# --- owl:minQualifiedCardinality --------------------------------------------
+# A philosopher with at least three recorded works.
+# This inference is only sound because the dataset asserts owl:AllDifferent:
+# without unique names the reasoner may merge individuals and under-count.
+:ProlificPhilosopher a owl:Class ;
+    rdfs:label "ProlificPhilosopher"@en ;
+    rdfs:comment "Philosopher credited with at least three works in this knowledge graph."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty :authored ;
+              owl:minQualifiedCardinality "3"^^xsd:nonNegativeInteger ;
+              owl:onClass :Work ] ) ] .
+
+# --- owl:hasValue -----------------------------------------------------------
+# Mirrors lecture Example #5 (FirstClassPassengers = travelsIn value First).
+:Criticism a owl:Class ;
+    rdfs:label "Criticism"@en ;
+    rdfs:comment "An engagement whose stance is criticizes."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Engagement
+            [ a owl:Restriction ;
+              owl:onProperty :stance ;
+              owl:hasValue "criticizes" ] ) ] .
+
+# --- owl:hasSelf ------------------------------------------------------------
+# Mirrors lecture Example #6 (SelfEvaluator = evaluates itself).
+# Expected to be empty: the SHACL shapes reject self-reference, so this class
+# acts as an OWL-level cross-check on the same rule.
+:SelfReferentialWork a owl:Class ;
+    rdfs:label "SelfReferentialWork"@en ;
+    rdfs:comment "Work that references itself. Expected to have no members; the SHACL shapes forbid it."@en ;
+    owl:equivalentClass [ a owl:Restriction ;
+        owl:onProperty :references ;
+        owl:hasSelf "true"^^xsd:boolean ] .
+
+
+###############################################################################
+#  CARDINALITY AXIOMS ON Engagement
+#
+#  Section 9 of the design document claims each Engagement has EXACTLY one
+#  fromWork, toWork and aboutConcept. owl:FunctionalProperty alone only gives
+#  "at most one". These qualified exact-cardinality axioms state the full
+#  claim in OWL; the SHACL shapes still enforce the minimum at validation
+#  time, because OWL's open-world assumption will never report a missing one.
+###############################################################################
+
+:Engagement rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty :fromWork ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass :Work ] ,
+    [ a owl:Restriction ; owl:onProperty :toWork ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass :Work ] ,
+    [ a owl:Restriction ; owl:onProperty :aboutConcept ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass :Concept ] .
+
+
+###############################################################################
+#  KEYS AND PROPERTY DISJOINTNESS
+###############################################################################
+
+# owl:hasKey gives the entity-matching story promised in Section 2 of the
+# design brief: two philosophers sharing an externalId are the same person.
+# Unlike owl:InverseFunctionalProperty it is DL-safe (it applies only to
+# named individuals), so it cannot make the ontology undecidable.
+#
+# For the key to mean anything, :externalId must be present on every
+# :Philosopher. All 31 now carry a Wikidata QID, each one verified against
+# the live Wikidata API (see philosophy_links.ttl for the method), and all
+# 31 are distinct.
+#
+# KNOWN TOOL BUG - owlrl 7.6.2 mis-implements this axiom.
+# Running an OWL-RL closure over this file with owlrl produces 4,352 spurious
+# owl:sameAs triples: it concludes that every philosopher is every other
+# philosopher, which then inflates hasTeachingAncestor from 19 to 961
+# (= 31 x 31). The ontology is NOT at fault. The library's prp-key rule
+# compares only the first len(keys) - 1 key properties:
+#
+#     for i in range(0, len(pis) - 1):          # owlrl/OWLRL.py, rule prp-key
+#
+# so for a SINGLE-property key the comparison loop is empty, "same" is never
+# falsified, and all individuals of the class collapse. Reproduced on a
+# three-individual toy ontology with all-distinct keys: a 1-property key
+# yields 6 spurious sameAs, while 2- and 3-property keys behave correctly.
+#
+# HermiT classifies this file correctly and reports no such merge. build.py
+# therefore asserts that the OWL-RL closure introduces no non-reflexive
+# owl:sameAs, and skips this axiom when running owlrl. See REPORT.md Sec. 6.
+#
+# :Work has NO key: only works with an en.wikipedia article carry an
+# externalId, so the property is partial there and a key would be unsound.
+:Philosopher owl:hasKey ( :externalId ) .
+
+# Teaching and reading are different kinds of relation and share no pairs.
+:studiedUnder owl:propertyDisjointWith :hasRead .
+
+# A work cannot both cite and be criticized via the same ordered pair being
+# simultaneously an act of praise and of criticism about the SAME concept;
+# praise and criticism about DIFFERENT concepts is allowed, which is why
+# :criticizes and :praises are deliberately NOT declared disjoint here.
+# (:WorldAsWill both praises and criticizes :CritiquePureReason.)
+
+
+# ===========================================================================
+# SOURCE: philosophy_dataset.ttl
+# ===========================================================================
+
+@prefix :     <http://example.org/philosophy#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+###############################################################################
+#  PHILOSOPHY DATASET v1 - instances for the ontology in philosophy_ontology.ttl
+#  Data only (no ontology header, no owl:imports), so it loads straight into
+#  Fuseki / GraphDB / RDFLib next to the ontology file. For Protege use
+#  philosophy_complete.ttl (ontology + this dataset in one file).
+#
+#  Curated starter set cross-checked against the live Wikidata SPARQL endpoint
+#  (query.wikidata.org, 2026-11-21); see REPORT.md Section 8 for the audit and
+#  for the divergences that were deliberately retained.
+#
+#  Year convention: years are xsd:int, with BCE written as a negative number
+#  (-428 = 428 BCE). xsd:gYear is NOT used: it is outside the OWL 2 datatype
+#  map, so HermiT and Pellet refuse to load an ontology containing it.
+#
+#  BCE numbering: this dataset uses HISTORICAL numbering, where -428 means
+#  428 BCE and there is no year zero. Wikidata serialises dates in ISO-8601
+#  ASTRONOMICAL numbering, which does have a year zero, so Wikidata's
+#  "-0383" is the same instant as our "-384". The two therefore differ by
+#  one for every BCE date; this is a convention offset, not a data error.
+#  See REPORT.md Section 8.
+#
+#  Ancient work years are left out on purpose (uncertain), and some
+#  philosophers/works have no school, to exercise OPTIONAL patterns.
+###############################################################################
+
+# ---- time periods ---
+:ClassicalGreece a :TimePeriod ; rdfs:label "Classical Greece"@en ; :startYear "-500"^^xsd:int ; :endYear "-323"^^xsd:int .
+:MedievalPeriod a :TimePeriod ; rdfs:label "Medieval period"@en ; :startYear "476"^^xsd:int ; :endYear "1453"^^xsd:int .
+:EarlyModernPeriod a :TimePeriod ; rdfs:label "Early modern period"@en ; :startYear "1454"^^xsd:int ; :endYear "1800"^^xsd:int .
+:NineteenthCentury a :TimePeriod ; rdfs:label "Nineteenth century"@en ; :startYear "1801"^^xsd:int ; :endYear "1900"^^xsd:int .
+:TwentiethCentury a :TimePeriod ; rdfs:label "Twentieth century"@en ; :startYear "1901"^^xsd:int ; :endYear "2000"^^xsd:int .
+
+# ---- places ---
+:Greece a :Country ; rdfs:label "Greece"@en .
+:Athens a :City ; rdfs:label "Athens"@en ; :locatedIn :Greece .
+:Prussia a :Country ; rdfs:label "Prussia (historical)"@en .
+:Konigsberg a :City ; rdfs:label "Königsberg"@en ; :locatedIn :Prussia .
+:France a :Country ; rdfs:label "France"@en .
+:Paris a :City ; rdfs:label "Paris"@en ; :locatedIn :France .
+
+# ---- schools ---
+:WesternPhilosophy a :SchoolOfThought ; rdfs:label "Western philosophy"@en .
+:AncientGreekPhilosophy a :SchoolOfThought ; rdfs:label "Ancient Greek philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:Platonism a :SchoolOfThought ; rdfs:label "Platonism"@en ; :subSchoolOf :AncientGreekPhilosophy .
+:Peripatetic a :SchoolOfThought ; rdfs:label "Peripatetic school"@en ; :subSchoolOf :AncientGreekPhilosophy .
+:Stoicism a :SchoolOfThought ; rdfs:label "Stoicism"@en ; :subSchoolOf :AncientGreekPhilosophy .
+:MedievalPhilosophy a :SchoolOfThought ; rdfs:label "Medieval philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:Scholasticism a :SchoolOfThought ; rdfs:label "Scholasticism"@en ; :subSchoolOf :MedievalPhilosophy .
+:Thomism a :SchoolOfThought ; rdfs:label "Thomism"@en ; :subSchoolOf :Scholasticism .
+:EarlyModernPhilosophy a :SchoolOfThought ; rdfs:label "Early modern philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:Rationalism a :SchoolOfThought ; rdfs:label "Rationalism"@en ; :subSchoolOf :EarlyModernPhilosophy .
+:Empiricism a :SchoolOfThought ; rdfs:label "Empiricism"@en ; :subSchoolOf :EarlyModernPhilosophy .
+:ContinentalPhilosophy a :SchoolOfThought ; rdfs:label "Continental philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+:GermanIdealism a :SchoolOfThought ; rdfs:label "German idealism"@en ; :subSchoolOf :ContinentalPhilosophy .
+:Phenomenology a :SchoolOfThought ; rdfs:label "Phenomenology"@en ; :subSchoolOf :ContinentalPhilosophy .
+:Existentialism a :SchoolOfThought ; rdfs:label "Existentialism"@en ; :subSchoolOf :ContinentalPhilosophy .
+:AnalyticPhilosophy a :SchoolOfThought ; rdfs:label "Analytic philosophy"@en ; :subSchoolOf :WesternPhilosophy .
+
+# ---- concepts ---
+:TheoryOfForms a :Concept ; rdfs:label "Theory of Forms"@en .
+:FormOfTheGood a :Concept ; rdfs:label "Form of the Good"@en .
+:Causality a :Concept ; rdfs:label "Causality"@en .
+:TranscendentalIdealism a :Concept ; rdfs:label "Transcendental idealism"@en .
+:KantianCategories a :Concept ; rdfs:label "Kantian categories"@en .
+:PictureTheory a :Concept ; rdfs:label "Picture theory of meaning"@en .
+:PhenomenologicalMethod a :Concept ; rdfs:label "Phenomenological method"@en .
+:Being a :Concept ; rdfs:label "Being"@en .
+:BeingTowardDeath a :Concept ; rdfs:label "Being-toward-death"@en .
+
+# ---- philosophers ---
+:Socrates a :Philosopher ;
+    rdfs:label "Socrates"@en ;
+    :birthYear "-470"^^xsd:int ;
+    :deathYear "-399"^^xsd:int ;
+    :externalId "Q913" .
+:Plato a :Philosopher ;
+    rdfs:label "Plato"@en ;
+    :birthYear "-428"^^xsd:int ;
+    :deathYear "-348"^^xsd:int ;
+    :externalId "Q859" ;
+    :studiedUnder :Socrates ;
+    :belongsToSchool :Platonism .
+:Aristotle a :Philosopher ;
+    rdfs:label "Aristotle"@en ;
+    :birthYear "-384"^^xsd:int ;
+    :deathYear "-322"^^xsd:int ;
+    :externalId "Q868" ;
+    :studiedUnder :Plato ;
+    :belongsToSchool :Peripatetic .
+:Theophrastus a :Philosopher ;
+    rdfs:label "Theophrastus"@en ;
+    :birthYear "-371"^^xsd:int ;
+    :deathYear "-287"^^xsd:int ;
+    :externalId "Q160362" ;
+    :studiedUnder :Aristotle ;
+    :belongsToSchool :Peripatetic .
+:ZenoOfCitium a :Philosopher ;
+    rdfs:label "Zeno of Citium"@en ;
+    :birthYear "-334"^^xsd:int ;
+    :deathYear "-262"^^xsd:int ;
+    :externalId "Q171303" ;
+    :belongsToSchool :Stoicism .
+:Augustine a :Philosopher ;
+    rdfs:label "Augustine of Hippo"@en ;
+    :birthYear "354"^^xsd:int ;
+    :deathYear "430"^^xsd:int ;
+    :externalId "Q8018" ;
+    :influencedBy :Plato ;
+    :belongsToSchool :MedievalPhilosophy .
+:AlbertusMagnus a :Philosopher ;
+    rdfs:label "Albertus Magnus"@en ;
+    :birthYear "1200"^^xsd:int ;
+    :deathYear "1280"^^xsd:int ;
+    :externalId "Q60059" ;
+    :belongsToSchool :Scholasticism .
+:Aquinas a :Philosopher ;
+    rdfs:label "Thomas Aquinas"@en ;
+    :birthYear "1225"^^xsd:int ;
+    :deathYear "1274"^^xsd:int ;
+    :externalId "Q9438" ;
+    :studiedUnder :AlbertusMagnus ;
+    :influencedBy :Aristotle ;
+    :belongsToSchool :Thomism .
+:Descartes a :Philosopher ;
+    rdfs:label "René Descartes"@en ;
+    :birthYear "1596"^^xsd:int ;
+    :deathYear "1650"^^xsd:int ;
+    :externalId "Q9191" ;
+    :belongsToSchool :Rationalism .
+:Spinoza a :Philosopher ;
+    rdfs:label "Baruch Spinoza"@en ;
+    :birthYear "1632"^^xsd:int ;
+    :deathYear "1677"^^xsd:int ;
+    :externalId "Q35802" ;
+    :influencedBy :Descartes ;
+    :belongsToSchool :Rationalism .
+:Thomasius a :Philosopher ;
+    rdfs:label "Jakob Thomasius"@en ;
+    :birthYear "1622"^^xsd:int ;
+    :externalId "Q67323" ;
+    :deathYear "1684"^^xsd:int .
+:Leibniz a :Philosopher ;
+    rdfs:label "Gottfried Wilhelm Leibniz"@en ;
+    :birthYear "1646"^^xsd:int ;
+    :deathYear "1716"^^xsd:int ;
+    :externalId "Q9047" ;
+    :studiedUnder :Thomasius ;
+    :belongsToSchool :Rationalism .
+:Locke a :Philosopher ;
+    rdfs:label "John Locke"@en ;
+    :birthYear "1632"^^xsd:int ;
+    :deathYear "1704"^^xsd:int ;
+    :externalId "Q9353" ;
+    :influencedBy :Descartes ;
+    :belongsToSchool :Empiricism .
+:Berkeley a :Philosopher ;
+    rdfs:label "George Berkeley"@en ;
+    :birthYear "1685"^^xsd:int ;
+    :deathYear "1753"^^xsd:int ;
+    :externalId "Q82049" ;
+    :influencedBy :Locke ;
+    :belongsToSchool :Empiricism .
+:Hume a :Philosopher ;
+    rdfs:label "David Hume"@en ;
+    :birthYear "1711"^^xsd:int ;
+    :deathYear "1776"^^xsd:int ;
+    :externalId "Q37160" ;
+    :influencedBy :Locke ;
+    :influencedBy :Berkeley ;
+    :belongsToSchool :Empiricism .
+:Knutzen a :Philosopher ;
+    rdfs:label "Martin Knutzen"@en ;
+    :birthYear "1713"^^xsd:int ;
+    :externalId "Q70793" ;
+    :deathYear "1751"^^xsd:int .
+:Kant a :Philosopher ;
+    rdfs:label "Immanuel Kant"@en ;
+    :birthYear "1724"^^xsd:int ;
+    :deathYear "1804"^^xsd:int ;
+    :externalId "Q9312" ;
+    :studiedUnder :Knutzen ;
+    :influencedBy :Hume ;
+    :belongsToSchool :GermanIdealism .
+:Hegel a :Philosopher ;
+    rdfs:label "Georg Wilhelm Friedrich Hegel"@en ;
+    :birthYear "1770"^^xsd:int ;
+    :deathYear "1831"^^xsd:int ;
+    :externalId "Q9235" ;
+    :influencedBy :Kant ;
+    :belongsToSchool :GermanIdealism .
+:Schopenhauer a :Philosopher ;
+    rdfs:label "Arthur Schopenhauer"@en ;
+    :birthYear "1788"^^xsd:int ;
+    :deathYear "1860"^^xsd:int ;
+    :externalId "Q38193" ;
+    :influencedBy :Kant .
+:Kierkegaard a :Philosopher ;
+    rdfs:label "Søren Kierkegaard"@en ;
+    :birthYear "1813"^^xsd:int ;
+    :deathYear "1855"^^xsd:int ;
+    :externalId "Q6512" ;
+    :belongsToSchool :Existentialism .
+:Mill a :Philosopher ;
+    rdfs:label "John Stuart Mill"@en ;
+    :birthYear "1806"^^xsd:int ;
+    :externalId "Q50020" ;
+    :deathYear "1873"^^xsd:int .
+:Marx a :Philosopher ;
+    rdfs:label "Karl Marx"@en ;
+    :birthYear "1818"^^xsd:int ;
+    :deathYear "1883"^^xsd:int ;
+    :externalId "Q9061" ;
+    :influencedBy :Hegel .
+:Nietzsche a :Philosopher ;
+    rdfs:label "Friedrich Nietzsche"@en ;
+    :birthYear "1844"^^xsd:int ;
+    :deathYear "1900"^^xsd:int ;
+    :externalId "Q9358" ;
+    :influencedBy :Schopenhauer .
+:Brentano a :Philosopher ;
+    rdfs:label "Franz Brentano"@en ;
+    :birthYear "1838"^^xsd:int ;
+    :externalId "Q57196" ;
+    :deathYear "1917"^^xsd:int .
+:Husserl a :Philosopher ;
+    rdfs:label "Edmund Husserl"@en ;
+    :birthYear "1859"^^xsd:int ;
+    :deathYear "1938"^^xsd:int ;
+    :externalId "Q58586" ;
+    :studiedUnder :Brentano ;
+    :belongsToSchool :Phenomenology .
+:Russell a :Philosopher , :Reader ;
+    rdfs:label "Bertrand Russell"@en ;
+    :birthYear "1872"^^xsd:int ;
+    :deathYear "1970"^^xsd:int ;
+    :externalId "Q33760" ;
+    :belongsToSchool :AnalyticPhilosophy ;
+    :hasRead :Tractatus .
+:Heidegger a :Philosopher ;
+    rdfs:label "Martin Heidegger"@en ;
+    :birthYear "1889"^^xsd:int ;
+    :deathYear "1976"^^xsd:int ;
+    :externalId "Q48301" ;
+    # Corrected 2026-11-21: this was "Q8253", which is the Wikidata entity
+    # "fiction". Martin Heidegger is Q48301 (verified against the live endpoint).
+    :externalId "Q48301" ;
+    :studiedUnder :Husserl ;
+    :influencedBy :Aristotle ;
+    :influencedBy :Kierkegaard ;
+    :belongsToSchool :Phenomenology .
+:Wittgenstein a :Philosopher ;
+    rdfs:label "Ludwig Wittgenstein"@en ;
+    :birthYear "1889"^^xsd:int ;
+    :deathYear "1951"^^xsd:int ;
+    :externalId "Q9391" ;
+    :studiedUnder :Russell ;
+    :influencedBy :Schopenhauer ;
+    :belongsToSchool :AnalyticPhilosophy .
+:Sartre a :Philosopher ;
+    rdfs:label "Jean-Paul Sartre"@en ;
+    :birthYear "1905"^^xsd:int ;
+    :deathYear "1980"^^xsd:int ;
+    :externalId "Q9364" ;
+    :influencedBy :Heidegger ;
+    :influencedBy :Husserl ;
+    :belongsToSchool :Existentialism .
+:Arendt a :Philosopher ;
+    rdfs:label "Hannah Arendt"@en ;
+    :birthYear "1906"^^xsd:int ;
+    :deathYear "1975"^^xsd:int ;
+    :externalId "Q60025" ;
+    :studiedUnder :Heidegger .
+:Gadamer a :Philosopher ;
+    rdfs:label "Hans-Georg Gadamer"@en ;
+    :birthYear "1900"^^xsd:int ;
+    :deathYear "2002"^^xsd:int ;
+    :externalId "Q76356" ;
+    :studiedUnder :Heidegger .
+
+# ---- works ---
+:Republic a :Dialogue ;
+    :title "Republic" ;
+    :createdBy :Plato ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Platonism .
+:Phaedo a :Dialogue ;
+    :title "Phaedo" ;
+    :createdBy :Plato ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Platonism .
+:Meno a :Dialogue ;
+    :title "Meno" ;
+    :createdBy :Plato ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Platonism .
+:Metaphysics a :Treatise ;
+    :title "Metaphysics" ;
+    :createdBy :Aristotle ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Peripatetic .
+:NicomacheanEthics a :Treatise ;
+    :title "Nicomachean Ethics" ;
+    :createdBy :Aristotle ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Peripatetic .
+:EnquiryIntoPlants a :Treatise ;
+    :title "Enquiry into Plants" ;
+    :createdBy :Theophrastus ;
+    :composedDuring :ClassicalGreece ;
+    :createdIn :Athens ;
+    :belongsToSchool :Peripatetic .
+:CommentaryOnMetaphysics a :Commentary ;
+    :title "Commentary on Aristotle’s Metaphysics" ;
+    :createdBy :Aquinas ;
+    :composedDuring :MedievalPeriod ;
+    :belongsToSchool :Thomism ;
+    :cites :Metaphysics .
+:SummaTheologiae a :Treatise ;
+    :title "Summa Theologiae" ;
+    :createdBy :Aquinas ;
+    :composedDuring :MedievalPeriod ;
+    :creationYear "1265"^^xsd:int ;
+    :belongsToSchool :Thomism .
+:Meditations a :Treatise ;
+    :title "Meditations on First Philosophy" ;
+    :createdBy :Descartes ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1641"^^xsd:int ;
+    :belongsToSchool :Rationalism .
+:Ethics a :Treatise ;
+    :title "Ethics" ;
+    :createdBy :Spinoza ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1677"^^xsd:int ;
+    :belongsToSchool :Rationalism .
+:Monadology a :Essay ;
+    :title "Monadology" ;
+    :createdBy :Leibniz ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1714"^^xsd:int ;
+    :belongsToSchool :Rationalism .
+:EssayHumanUnderstanding a :Treatise ;
+    :title "An Essay Concerning Human Understanding" ;
+    :createdBy :Locke ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1689"^^xsd:int ;
+    :belongsToSchool :Empiricism .
+:TreatiseHumanNature a :Treatise ;
+    :title "A Treatise of Human Nature" ;
+    :createdBy :Hume ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1739"^^xsd:int ;
+    :belongsToSchool :Empiricism .
+:EnquiryHumanUnderstanding a :Treatise ;
+    :title "An Enquiry Concerning Human Understanding" ;
+    :createdBy :Hume ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1748"^^xsd:int ;
+    :belongsToSchool :Empiricism .
+:CritiquePureReason a :Treatise ;
+    :title "Critique of Pure Reason" ;
+    :createdBy :Kant ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1781"^^xsd:int ;
+    :createdIn :Konigsberg ;
+    :belongsToSchool :GermanIdealism .
+:Prolegomena a :Treatise ;
+    :title "Prolegomena to Any Future Metaphysics" ;
+    :createdBy :Kant ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1783"^^xsd:int ;
+    :createdIn :Konigsberg ;
+    :belongsToSchool :GermanIdealism ;
+    :cites :CritiquePureReason .
+:Groundwork a :Treatise ;
+    :title "Groundwork of the Metaphysics of Morals" ;
+    :createdBy :Kant ;
+    :composedDuring :EarlyModernPeriod ;
+    :creationYear "1785"^^xsd:int ;
+    :createdIn :Konigsberg ;
+    :belongsToSchool :GermanIdealism .
+:PhenomenologyOfSpirit a :Treatise ;
+    :title "Phenomenology of Spirit" ;
+    :createdBy :Hegel ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1807"^^xsd:int ;
+    :belongsToSchool :GermanIdealism .
+:WorldAsWill a :Treatise ;
+    :title "The World as Will and Representation" ;
+    :createdBy :Schopenhauer ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1818"^^xsd:int .
+:OnLiberty a :Essay ;
+    :title "On Liberty" ;
+    :createdBy :Mill ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1859"^^xsd:int .
+:Capital a :Treatise ;
+    :title "Capital" ;
+    :createdBy :Marx ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1867"^^xsd:int .
+# Typed as :Dialogue rather than bare :Work: it is a narrative composed of
+# speeches and exchanges, not a systematic exposition. Every work in the
+# dataset now has a leaf type, so no individual sits directly under :Work.
+:Zarathustra a :Dialogue ;
+    :title "Thus Spoke Zarathustra" ;
+    :createdBy :Nietzsche ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1883"^^xsd:int .
+:LogicalInvestigations a :Treatise ;
+    :title "Logical Investigations" ;
+    :createdBy :Husserl ;
+    :composedDuring :NineteenthCentury ;
+    :creationYear "1900"^^xsd:int ;
+    :belongsToSchool :Phenomenology .
+:ProblemsOfPhilosophy a :Essay ;
+    :title "The Problems of Philosophy" ;
+    :createdBy :Russell ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1912"^^xsd:int ;
+    :belongsToSchool :AnalyticPhilosophy .
+:Tractatus a :Treatise ;
+    :title "Tractatus Logico-Philosophicus" ;
+    :createdBy :Wittgenstein ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1921"^^xsd:int ;
+    :belongsToSchool :AnalyticPhilosophy .
+:BeingAndTime a :Treatise ;
+    :title "Being and Time" ;
+    :createdBy :Heidegger ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1927"^^xsd:int ;
+    :belongsToSchool :Phenomenology .
+:BeingAndNothingness a :Treatise ;
+    :title "Being and Nothingness" ;
+    :createdBy :Sartre ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1943"^^xsd:int ;
+    :createdIn :Paris ;
+    :belongsToSchool :Existentialism .
+:PhilosophicalInvestigations a :Treatise ;
+    :title "Philosophical Investigations" ;
+    :createdBy :Wittgenstein ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1953"^^xsd:int ;
+    :belongsToSchool :AnalyticPhilosophy .
+:HumanCondition a :Treatise ;
+    :title "The Human Condition" ;
+    :createdBy :Arendt ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1958"^^xsd:int .
+:TruthAndMethod a :Treatise ;
+    :title "Truth and Method" ;
+    :createdBy :Gadamer ;
+    :composedDuring :TwentiethCentury ;
+    :creationYear "1960"^^xsd:int .
+
+# ---- engagements ---
+:eng01 a :Engagement ;
+    :fromWork :Metaphysics ; :toWork :Republic ; :aboutConcept :TheoryOfForms ;
+    :stance "criticizes" ; :confidenceScore 0.9 .
+:eng02 a :Engagement ;
+    :fromWork :NicomacheanEthics ; :toWork :Republic ; :aboutConcept :FormOfTheGood ;
+    :stance "criticizes" ; :confidenceScore 0.8 .
+:eng03 a :Engagement ;
+    :fromWork :CritiquePureReason ; :toWork :EnquiryHumanUnderstanding ; :aboutConcept :Causality ;
+    :stance "criticizes" ; :confidenceScore 0.7 .
+:eng04 a :Engagement ;
+    :fromWork :Prolegomena ; :toWork :EnquiryHumanUnderstanding ; :aboutConcept :Causality ;
+    :stance "praises" ; :confidenceScore 0.7 .
+:eng05 a :Engagement ;
+    :fromWork :WorldAsWill ; :toWork :CritiquePureReason ; :aboutConcept :TranscendentalIdealism ;
+    :stance "praises" ; :confidenceScore 0.8 .
+:eng06 a :Engagement ;
+    :fromWork :WorldAsWill ; :toWork :CritiquePureReason ; :aboutConcept :KantianCategories ;
+    :stance "criticizes" ; :confidenceScore 0.85 .
+:eng07 a :Engagement ;
+    :fromWork :PhilosophicalInvestigations ; :toWork :Tractatus ; :aboutConcept :PictureTheory ;
+    :stance "criticizes" ; :confidenceScore 0.95 .
+:eng08 a :Engagement ;
+    :fromWork :BeingAndTime ; :toWork :LogicalInvestigations ; :aboutConcept :PhenomenologicalMethod ;
+    :stance "praises" ; :confidenceScore 0.7 .
+:eng09 a :Engagement ;
+    :fromWork :BeingAndNothingness ; :toWork :BeingAndTime ; :aboutConcept :BeingTowardDeath ;
+    :stance "criticizes" ; :confidenceScore 0.7 .
+:eng10 a :Engagement ;
+    :fromWork :CommentaryOnMetaphysics ; :toWork :Metaphysics ; :aboutConcept :Being ;
+    :stance "neutral" ; :confidenceScore 0.9 .
+
+# ---- readers ---
+:reader1 a :Reader ;
+    rdfs:label "Alice"@en ;
+    :hasInterestIn :Causality ;
+    :hasInterestIn :TranscendentalIdealism ;
+    :hasRead :EnquiryHumanUnderstanding ;
+    :hasRead :CritiquePureReason .
+:reader2 a :Reader ;
+    rdfs:label "Bram"@en ;
+    :hasInterestIn :TheoryOfForms ;
+    :hasInterestIn :PictureTheory ;
+    :hasRead :Republic .
+
+###############################################################################
+#  NAMED INDIVIDUAL DECLARATIONS AND owl:AllDifferent
+#
+#  Mirrors the pattern taught in Week 9, Example #2 (the four string
+#  instruments declared owl:NamedIndividual and then owl:AllDifferent).
+#
+#  Why this matters here. OWL makes NO unique-name assumption: without an
+#  explicit statement, a reasoner is free to conclude that two differently
+#  named individuals are the same thing. That silently breaks every
+#  cardinality inference. Measured on this dataset, :ProlificPhilosopher
+#  (authored min 3 Work) classifies 1 member without the owl:AllDifferent
+#  axiom below and 2 members with it. See REPORT.md Section 6.
+###############################################################################
+
+# --- TimePeriod (5) ---
+:ClassicalGreece a owl:NamedIndividual .
+:EarlyModernPeriod a owl:NamedIndividual .
+:MedievalPeriod a owl:NamedIndividual .
+:NineteenthCentury a owl:NamedIndividual .
+:TwentiethCentury a owl:NamedIndividual .
+
+# --- Country (3) ---
+:France a owl:NamedIndividual . :Greece a owl:NamedIndividual .
+:Prussia a owl:NamedIndividual .
+
+# --- City (3) ---
+:Athens a owl:NamedIndividual . :Konigsberg a owl:NamedIndividual .
+:Paris a owl:NamedIndividual .
+
+# --- SchoolOfThought (16) ---
+:AnalyticPhilosophy a owl:NamedIndividual .
+:AncientGreekPhilosophy a owl:NamedIndividual .
+:ContinentalPhilosophy a owl:NamedIndividual .
+:EarlyModernPhilosophy a owl:NamedIndividual .
+:Empiricism a owl:NamedIndividual . :Existentialism a owl:NamedIndividual .
+:GermanIdealism a owl:NamedIndividual .
+:MedievalPhilosophy a owl:NamedIndividual .
+:Peripatetic a owl:NamedIndividual . :Phenomenology a owl:NamedIndividual .
+:Platonism a owl:NamedIndividual . :Rationalism a owl:NamedIndividual .
+:Scholasticism a owl:NamedIndividual . :Stoicism a owl:NamedIndividual .
+:Thomism a owl:NamedIndividual . :WesternPhilosophy a owl:NamedIndividual .
+
+# --- Concept (9) ---
+:Being a owl:NamedIndividual . :BeingTowardDeath a owl:NamedIndividual .
+:Causality a owl:NamedIndividual . :FormOfTheGood a owl:NamedIndividual .
+:KantianCategories a owl:NamedIndividual .
+:PhenomenologicalMethod a owl:NamedIndividual .
+:PictureTheory a owl:NamedIndividual . :TheoryOfForms a owl:NamedIndividual .
+:TranscendentalIdealism a owl:NamedIndividual .
+
+# --- Philosopher (31) ---
+:AlbertusMagnus a owl:NamedIndividual . :Aquinas a owl:NamedIndividual .
+:Arendt a owl:NamedIndividual . :Aristotle a owl:NamedIndividual .
+:Augustine a owl:NamedIndividual . :Berkeley a owl:NamedIndividual .
+:Brentano a owl:NamedIndividual . :Descartes a owl:NamedIndividual .
+:Gadamer a owl:NamedIndividual . :Hegel a owl:NamedIndividual .
+:Heidegger a owl:NamedIndividual . :Hume a owl:NamedIndividual .
+:Husserl a owl:NamedIndividual . :Kant a owl:NamedIndividual .
+:Kierkegaard a owl:NamedIndividual . :Knutzen a owl:NamedIndividual .
+:Leibniz a owl:NamedIndividual . :Locke a owl:NamedIndividual .
+:Marx a owl:NamedIndividual . :Mill a owl:NamedIndividual .
+:Nietzsche a owl:NamedIndividual . :Plato a owl:NamedIndividual .
+:Russell a owl:NamedIndividual . :Sartre a owl:NamedIndividual .
+:Schopenhauer a owl:NamedIndividual . :Socrates a owl:NamedIndividual .
+:Spinoza a owl:NamedIndividual . :Theophrastus a owl:NamedIndividual .
+:Thomasius a owl:NamedIndividual . :Wittgenstein a owl:NamedIndividual .
+:ZenoOfCitium a owl:NamedIndividual .
+
+# --- Treatise (22) ---
+:BeingAndNothingness a owl:NamedIndividual .
+:BeingAndTime a owl:NamedIndividual . :Capital a owl:NamedIndividual .
+:CritiquePureReason a owl:NamedIndividual .
+:EnquiryHumanUnderstanding a owl:NamedIndividual .
+:EnquiryIntoPlants a owl:NamedIndividual .
+:EssayHumanUnderstanding a owl:NamedIndividual .
+:Ethics a owl:NamedIndividual . :Groundwork a owl:NamedIndividual .
+:HumanCondition a owl:NamedIndividual .
+:LogicalInvestigations a owl:NamedIndividual .
+:Meditations a owl:NamedIndividual . :Metaphysics a owl:NamedIndividual .
+:NicomacheanEthics a owl:NamedIndividual .
+:PhenomenologyOfSpirit a owl:NamedIndividual .
+:PhilosophicalInvestigations a owl:NamedIndividual .
+:Prolegomena a owl:NamedIndividual . :SummaTheologiae a owl:NamedIndividual .
+:Tractatus a owl:NamedIndividual .
+:TreatiseHumanNature a owl:NamedIndividual .
+:TruthAndMethod a owl:NamedIndividual . :WorldAsWill a owl:NamedIndividual .
+
+# --- Dialogue (4) ---
+:Meno a owl:NamedIndividual . :Phaedo a owl:NamedIndividual .
+:Republic a owl:NamedIndividual . :Zarathustra a owl:NamedIndividual .
+
+# --- Commentary (1) ---
+:CommentaryOnMetaphysics a owl:NamedIndividual .
+
+# --- Essay (3) ---
+:Monadology a owl:NamedIndividual . :OnLiberty a owl:NamedIndividual .
+:ProblemsOfPhilosophy a owl:NamedIndividual .
+
+# --- Engagement (10) ---
+:eng01 a owl:NamedIndividual . :eng02 a owl:NamedIndividual .
+:eng03 a owl:NamedIndividual . :eng04 a owl:NamedIndividual .
+:eng05 a owl:NamedIndividual . :eng06 a owl:NamedIndividual .
+:eng07 a owl:NamedIndividual . :eng08 a owl:NamedIndividual .
+:eng09 a owl:NamedIndividual . :eng10 a owl:NamedIndividual .
+
+# --- Reader (2) ---
+:reader1 a owl:NamedIndividual . :reader2 a owl:NamedIndividual .
+
+# All 109 individuals above are pairwise distinct.
+[] a owl:AllDifferent ;
+   owl:distinctMembers (
+      :ClassicalGreece :EarlyModernPeriod :MedievalPeriod
+      :NineteenthCentury :TwentiethCentury
+      :France :Greece :Prussia
+      :Athens :Konigsberg :Paris
+      :AnalyticPhilosophy :AncientGreekPhilosophy :ContinentalPhilosophy
+      :EarlyModernPhilosophy :Empiricism :Existentialism :GermanIdealism
+      :MedievalPhilosophy :Peripatetic :Phenomenology :Platonism
+      :Rationalism :Scholasticism :Stoicism :Thomism :WesternPhilosophy
+      :Being :BeingTowardDeath :Causality :FormOfTheGood
+      :KantianCategories :PhenomenologicalMethod :PictureTheory
+      :TheoryOfForms :TranscendentalIdealism
+      :AlbertusMagnus :Aquinas :Arendt :Aristotle :Augustine :Berkeley
+      :Brentano :Descartes :Gadamer :Hegel :Heidegger :Hume :Husserl
+      :Kant :Kierkegaard :Knutzen :Leibniz :Locke :Marx :Mill :Nietzsche
+      :Plato :Russell :Sartre :Schopenhauer :Socrates :Spinoza
+      :Theophrastus :Thomasius :Wittgenstein :ZenoOfCitium
+      :BeingAndNothingness :BeingAndTime :Capital :CritiquePureReason
+      :EnquiryHumanUnderstanding :EnquiryIntoPlants
+      :EssayHumanUnderstanding :Ethics :Groundwork :HumanCondition
+      :LogicalInvestigations :Meditations :Metaphysics
+      :NicomacheanEthics :PhenomenologyOfSpirit
+      :PhilosophicalInvestigations :Prolegomena :SummaTheologiae
+      :Tractatus :TreatiseHumanNature :TruthAndMethod :WorldAsWill
+      :Meno :Phaedo :Republic :Zarathustra
+      :CommentaryOnMetaphysics
+      :Monadology :OnLiberty :ProblemsOfPhilosophy
+      :eng01 :eng02 :eng03 :eng04 :eng05 :eng06 :eng07 :eng08 :eng09
+      :eng10
+      :reader1 :reader2
+   ) .

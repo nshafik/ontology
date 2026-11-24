@@ -1,0 +1,538 @@
+@prefix :      <http://example.org/philosophy#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@base          <http://example.org/philosophy> .
+
+###############################################################################
+#  PHILOSOPHY AND INTELLECTUAL HISTORY CURATION - ONTOLOGY (OWL 2 DL)
+#
+#  Follows the design document: 14 asserted classes, 4 defined classes,
+#  20 object properties (+ the inverse "authored"), 9 data properties.
+#
+#  Not expressible in OWL (handled outside the reasoner, see Section 10):
+#    * "not yet read"  -> SPARQL FILTER NOT EXISTS (open-world assumption)
+#    * criticizes / praises shortcut links from an Engagement's stance:
+#
+#        CONSTRUCT { ?a :criticizes ?b }
+#        WHERE { ?e a :Engagement ; :fromWork ?a ; :toWork ?b ;
+#                   :stance "criticizes" }
+#
+#        CONSTRUCT { ?a :praises ?b }
+#        WHERE { ?e a :Engagement ; :fromWork ?a ; :toWork ?b ;
+#                   :stance "praises" }
+#
+#    * deathYear >= birthYear and minimum counts -> SHACL (pyshacl)
+#
+#  Year convention: all years are xsd:int, with BCE written as a negative
+#  number (e.g. "-428"^^xsd:int means 428 BCE).
+#
+#  Why not xsd:gYear? xsd:gYear is NOT part of the OWL 2 datatype map
+#  (W3C OWL 2 Structural Specification, Sec. 4; Motik et al. 2012). HermiT
+#  and Pellet both abort with UnsupportedDatatypeException on an ontology
+#  that uses it, so the ontology could not be classified in Protege at all.
+#  xsd:int is in the datatype map, orders correctly for BCE negatives, and
+#  removes the xsd:integer(STR(?y)) casts the SHACL shapes previously needed.
+###############################################################################
+
+<http://example.org/philosophy> a owl:Ontology ;
+    rdfs:label "Philosophy and Intellectual History Curation Ontology"@en ;
+    rdfs:comment "Models philosophers, their works, schools of thought, places, periods and readers, and the engagements (criticism, praise, discussion) that connect works across eras."@en ;
+    owl:versionInfo "1.0" .
+
+
+###############################################################################
+#  CLASSES (14 asserted)
+###############################################################################
+
+:Work a owl:Class ;
+    rdfs:label "Work"@en ;
+    rdfs:comment "An intellectual creation, such as a book or essay."@en .
+
+:Treatise a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Treatise"@en ;
+    rdfs:comment "A systematic philosophical exposition."@en .
+
+:Dialogue a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Dialogue"@en ;
+    rdfs:comment "A work written as a dialogue."@en .
+
+:Commentary a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Commentary"@en ;
+    rdfs:comment "A work that interprets or discusses another work."@en .
+
+:Essay a owl:Class ;
+    rdfs:subClassOf :Work ;
+    rdfs:label "Essay"@en ;
+    rdfs:comment "A focused philosophical text. Not disjoint from Dialogue."@en .
+
+:Philosopher a owl:Class ;
+    rdfs:label "Philosopher"@en ;
+    rdfs:comment "A thinker who writes works or teaches other philosophers."@en .
+
+:Engagement a owl:Class ;
+    rdfs:label "Engagement"@en ;
+    rdfs:comment "A recorded relationship in which one work engages another about a concept, with a stance."@en .
+
+:Concept a owl:Class ;
+    rdfs:label "Concept"@en ;
+    rdfs:comment "A philosophical concept or thesis."@en .
+
+:SchoolOfThought a owl:Class ;
+    rdfs:label "SchoolOfThought"@en ;
+    rdfs:comment "A tradition or school, which may have sub-schools."@en .
+
+:Location a owl:Class ;
+    rdfs:label "Location"@en ;
+    rdfs:comment "A place with a position in a place hierarchy."@en .
+
+:Country a owl:Class ;
+    rdfs:subClassOf :Location ;
+    rdfs:label "Country"@en ;
+    rdfs:comment "A country."@en .
+
+:City a owl:Class ;
+    rdfs:subClassOf :Location ;
+    rdfs:label "City"@en ;
+    rdfs:comment "A city, located in a country."@en .
+
+:TimePeriod a owl:Class ;
+    rdfs:label "TimePeriod"@en ;
+    rdfs:comment "A span of years, with start and end years."@en .
+
+:Reader a owl:Class ;
+    rdfs:label "Reader"@en ;
+    rdfs:comment "A user with interests and a history of read works. A Philosopher may also be a Reader."@en .
+
+
+###############################################################################
+#  DISJOINTNESS (design document, Section 9)
+#
+#  The design document states that Philosopher, Work, Engagement, Concept,
+#  SchoolOfThought, Location and TimePeriod are PAIRWISE disjoint. An earlier
+#  revision of this file only asserted three of the 21 pairs, so the code was
+#  weaker than the documentation claimed. The owl:AllDisjointClasses axiom
+#  below closes that gap: it is the OWL 2 n-ary form and expands to all 21
+#  pairs, which is far more readable than 21 separate owl:disjointWith lines
+#  (OWL 2 Primer, Sec. 4.2).
+###############################################################################
+
+[] a owl:AllDisjointClasses ;
+   rdfs:comment "The seven top-level categories are mutually exclusive: nothing is both a person and a text, a text and an event, a place and a period, and so on."@en ;
+   owl:members ( :Philosopher :Work :Engagement :Concept :SchoolOfThought
+                 :Location :TimePeriod ) .
+
+# Reader is the one deliberate exception to the block above. It is disjoint
+# from every top-level class EXCEPT Philosopher, because a philosopher is also
+# a reader of other philosophers' works (e.g. :Russell below is both).
+:Reader owl:disjointWith :Work , :Engagement , :Concept , :SchoolOfThought ,
+                         :Location , :TimePeriod .
+
+# A place cannot be both a country and a city.
+:Country owl:disjointWith :City .
+
+# Treatise, Dialogue, Commentary and Essay are intentionally NOT declared
+# disjoint (the document states Essay and Dialogue are not disjoint): a text
+# can reasonably be read as more than one genre at once.
+
+
+###############################################################################
+#  OBJECT PROPERTIES (20, plus the inverse :authored)
+###############################################################################
+
+# ---- authorship ------------------------------------------------------------
+
+:createdBy a owl:ObjectProperty ;
+    rdfs:label "createdBy"@en ;
+    rdfs:comment "Links a work to the philosopher who created it. Inverse: authored."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Philosopher ;
+    owl:inverseOf :authored .
+
+:authored a owl:ObjectProperty ;
+    rdfs:label "authored"@en ;
+    rdfs:comment "Inverse of createdBy: the works of a philosopher."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Work .
+
+# ---- schools ---------------------------------------------------------------
+
+# A single domain axiom with a union. Two separate rdfs:domain axioms would
+# be intersected by the reasoner and wrongly force every subject to be both.
+:belongsToSchool a owl:ObjectProperty ;
+    rdfs:label "belongsToSchool"@en ;
+    rdfs:comment "Associates a work or a philosopher with a school of thought."@en ;
+    rdfs:domain [ a owl:Class ;
+                  owl:unionOf ( :Work :Philosopher ) ] ;
+    rdfs:range :SchoolOfThought .
+
+:subSchoolOf a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "subSchoolOf"@en ;
+    rdfs:comment "Direct sub-school relation. Asymmetric and irreflexive, so it is deliberately not transitive; the transitive closure is isWithinSchool."@en ;
+    rdfs:subPropertyOf :isWithinSchool ;
+    rdfs:domain :SchoolOfThought ;
+    rdfs:range :SchoolOfThought .
+
+:isWithinSchool a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "isWithinSchool"@en ;
+    rdfs:comment "Transitive super-property of subSchoolOf. Used for inference only."@en ;
+    rdfs:domain :SchoolOfThought ;
+    rdfs:range :SchoolOfThought .
+
+# ---- influence and teaching lineage ---------------------------------------
+
+:influencedBy a owl:ObjectProperty , owl:IrreflexiveProperty ;
+    rdfs:label "influencedBy"@en ;
+    rdfs:comment "Intellectual influence. Not transitive, because influence weakens along a chain. studiedUnder is a sub-property."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Philosopher .
+
+:studiedUnder a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "studiedUnder"@en ;
+    rdfs:comment "Direct teacher-pupil link. Asymmetric and irreflexive, so it is deliberately not transitive; the transitive closure is hasTeachingAncestor."@en ;
+    rdfs:subPropertyOf :hasTeachingAncestor , :influencedBy ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Philosopher .
+
+:hasTeachingAncestor a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "hasTeachingAncestor"@en ;
+    rdfs:comment "Transitive super-property of studiedUnder. Used for inference only."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range :Philosopher .
+
+:createdInLineageOf a owl:ObjectProperty ;
+    rdfs:label "createdInLineageOf"@en ;
+    rdfs:comment "Inferred: createdBy followed by hasTeachingAncestor."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Philosopher ;
+    owl:propertyChainAxiom ( :createdBy :hasTeachingAncestor ) .
+
+# ---- engagement ------------------------------------------------------------
+
+:fromWork a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "fromWork"@en ;
+    rdfs:comment "Source work of an engagement."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range :Work .
+
+:toWork a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "toWork"@en ;
+    rdfs:comment "Target work of an engagement."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range :Work .
+
+:aboutConcept a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "aboutConcept"@en ;
+    rdfs:comment "Concept discussed by the engagement."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range :Concept .
+
+# ---- place and time --------------------------------------------------------
+
+:createdIn a owl:ObjectProperty ;
+    rdfs:label "createdIn"@en ;
+    rdfs:comment "Where a work was created. Inferred up the hierarchy: createdIn followed by locatedIn."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Location ;
+    owl:propertyChainAxiom ( :createdIn :locatedIn ) .
+
+:locatedIn a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "locatedIn"@en ;
+    rdfs:comment "Place hierarchy, for example City to Country."@en ;
+    rdfs:domain :Location ;
+    rdfs:range :Location .
+
+:composedDuring a owl:ObjectProperty ;
+    rdfs:label "composedDuring"@en ;
+    rdfs:comment "Anchors a work in time."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :TimePeriod .
+
+# ---- references (general to specific) -------------------------------------
+
+:references a owl:ObjectProperty ;
+    rdfs:label "references"@en ;
+    rdfs:comment "General reference from one work to another."@en ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+:cites a owl:ObjectProperty ;
+    rdfs:label "cites"@en ;
+    rdfs:comment "Citation of one work by another."@en ;
+    rdfs:subPropertyOf :references ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+:criticizes a owl:ObjectProperty ;
+    rdfs:label "criticizes"@en ;
+    rdfs:comment "Shortcut link derived (by SPARQL CONSTRUCT or SWRL, not OWL) from an engagement with stance criticizes."@en ;
+    rdfs:subPropertyOf :references ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+:praises a owl:ObjectProperty ;
+    rdfs:label "praises"@en ;
+    rdfs:comment "Shortcut link derived (by SPARQL CONSTRUCT or SWRL, not OWL) from an engagement with stance praises."@en ;
+    rdfs:subPropertyOf :references ;
+    rdfs:domain :Work ;
+    rdfs:range :Work .
+
+# ---- readers ---------------------------------------------------------------
+
+:hasRead a owl:ObjectProperty ;
+    rdfs:label "hasRead"@en ;
+    rdfs:comment "Reading history. Used to exclude works already read (via FILTER NOT EXISTS)."@en ;
+    rdfs:domain :Reader ;
+    rdfs:range :Work .
+
+:hasInterestIn a owl:ObjectProperty ;
+    rdfs:label "hasInterestIn"@en ;
+    rdfs:comment "Reader preference."@en ;
+    rdfs:domain :Reader ;
+    rdfs:range :Concept .
+
+
+###############################################################################
+#  DATA PROPERTIES (9)
+###############################################################################
+
+:title a owl:DatatypeProperty ;
+    rdfs:label "title"@en ;
+    rdfs:comment "Display title."@en ;
+    rdfs:domain :Work ;
+    rdfs:range xsd:string .
+
+:creationYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "creationYear"@en ;
+    rdfs:comment "Year a work was created. BCE years are negative (see ontology header)."@en ;
+    rdfs:domain :Work ;
+    rdfs:range xsd:int .
+
+:birthYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "birthYear"@en ;
+    rdfs:comment "At most one birth year per philosopher. BCE years are negative."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range xsd:int .
+
+:deathYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "deathYear"@en ;
+    rdfs:comment "At most one death year per philosopher. SHACL checks it is not before birthYear."@en ;
+    rdfs:domain :Philosopher ;
+    rdfs:range xsd:int .
+
+# Range is the closed set {praises, criticizes, neutral}, so any other value
+# makes the ontology inconsistent when the reasoner runs.
+:stance a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "stance"@en ;
+    rdfs:comment "Stance of an engagement. One of praises, criticizes, neutral."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range [ a rdfs:Datatype ;
+                 owl:oneOf ( "praises" "criticizes" "neutral" ) ] .
+
+# Range is xsd:decimal restricted to the interval [0, 1].
+:confidenceScore a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "confidenceScore"@en ;
+    rdfs:comment "Curator confidence in the engagement, from 0 to 1."@en ;
+    rdfs:domain :Engagement ;
+    rdfs:range [ a rdfs:Datatype ;
+                 owl:onDatatype xsd:decimal ;
+                 owl:withRestrictions ( [ xsd:minInclusive 0.0 ]
+                                        [ xsd:maxInclusive 1.0 ] ) ] .
+
+:startYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "startYear"@en ;
+    rdfs:comment "First year of a time period."@en ;
+    rdfs:domain :TimePeriod ;
+    rdfs:range xsd:int .
+
+:endYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "endYear"@en ;
+    rdfs:comment "Last year of a time period."@en ;
+    rdfs:domain :TimePeriod ;
+    rdfs:range xsd:int .
+
+# No domain on purpose: used on any entity for matching across sources.
+:externalId a owl:DatatypeProperty ;
+    rdfs:label "externalId"@en ;
+    rdfs:comment "Wikidata or library authority identifier for entity matching."@en ;
+    rdfs:range xsd:string .
+
+
+###############################################################################
+#  DEFINED CLASSES (4) - members are inferred by the reasoner
+###############################################################################
+
+:StudentThinker a owl:Class ;
+    rdfs:label "StudentThinker"@en ;
+    rdfs:comment "Philosopher who studied under some Philosopher."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty :studiedUnder ;
+              owl:someValuesFrom :Philosopher ] ) ] .
+
+:TeacherThinker a owl:Class ;
+    rdfs:label "TeacherThinker"@en ;
+    rdfs:comment "Philosopher who is the teacher of some Philosopher."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :studiedUnder ] ;
+              owl:someValuesFrom :Philosopher ] ) ] .
+
+:InfluencerThinker a owl:Class ;
+    rdfs:label "InfluencerThinker"@en ;
+    rdfs:comment "Philosopher who has influenced some Philosopher."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :influencedBy ] ;
+              owl:someValuesFrom :Philosopher ] ) ] .
+
+:CriticizedWork a owl:Class ;
+    rdfs:label "CriticizedWork"@en ;
+    rdfs:comment "Work that is the target of a criticizing engagement."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Work
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :toWork ] ;
+              owl:someValuesFrom [ a owl:Class ;
+                  owl:intersectionOf ( :Engagement
+                      [ a owl:Restriction ;
+                        owl:onProperty :stance ;
+                        owl:hasValue "criticizes" ] ) ] ] ) ] .
+
+
+###############################################################################
+#  ADDITIONAL CLASS EXPRESSIONS
+#
+#  Each class below exercises one OWL 2 construct from the Week 9 lecture, on
+#  this domain rather than on the lecture's toy example. The lecture example
+#  that each one mirrors is named in its comment.
+###############################################################################
+
+# --- owl:allValuesFrom + owl:complementOf -----------------------------------
+# Mirrors lecture Example #1 (AvailableBook = Book lent to no Member).
+#
+#   UncriticizedWork == Work  AND  (inverse toWork) ONLY (NOT stance "criticizes")
+#
+# A universal restriction, so it holds vacuously for works with no incoming
+# engagement at all. Note this infers nothing under the open-world assumption
+# for works that DO have engagements unless the engagement set is closed;
+# that behaviour is deliberate and is discussed in REPORT.md Section 6.
+:UncriticizedWork a owl:Class ;
+    rdfs:label "UncriticizedWork"@en ;
+    rdfs:comment "Work for which every incoming engagement, if any, has a stance other than criticizes."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Work
+            [ a owl:Restriction ;
+              owl:onProperty [ owl:inverseOf :toWork ] ;
+              owl:allValuesFrom [ a owl:Class ;
+                  owl:complementOf [ a owl:Restriction ;
+                      owl:onProperty :stance ;
+                      owl:hasValue "criticizes" ] ] ] ) ] .
+
+# --- owl:minQualifiedCardinality --------------------------------------------
+# A philosopher with at least three recorded works.
+# This inference is only sound because the dataset asserts owl:AllDifferent:
+# without unique names the reasoner may merge individuals and under-count.
+:ProlificPhilosopher a owl:Class ;
+    rdfs:label "ProlificPhilosopher"@en ;
+    rdfs:comment "Philosopher credited with at least three works in this knowledge graph."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Philosopher
+            [ a owl:Restriction ;
+              owl:onProperty :authored ;
+              owl:minQualifiedCardinality "3"^^xsd:nonNegativeInteger ;
+              owl:onClass :Work ] ) ] .
+
+# --- owl:hasValue -----------------------------------------------------------
+# Mirrors lecture Example #5 (FirstClassPassengers = travelsIn value First).
+:Criticism a owl:Class ;
+    rdfs:label "Criticism"@en ;
+    rdfs:comment "An engagement whose stance is criticizes."@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:intersectionOf ( :Engagement
+            [ a owl:Restriction ;
+              owl:onProperty :stance ;
+              owl:hasValue "criticizes" ] ) ] .
+
+# --- owl:hasSelf ------------------------------------------------------------
+# Mirrors lecture Example #6 (SelfEvaluator = evaluates itself).
+# Expected to be empty: the SHACL shapes reject self-reference, so this class
+# acts as an OWL-level cross-check on the same rule.
+:SelfReferentialWork a owl:Class ;
+    rdfs:label "SelfReferentialWork"@en ;
+    rdfs:comment "Work that references itself. Expected to have no members; the SHACL shapes forbid it."@en ;
+    owl:equivalentClass [ a owl:Restriction ;
+        owl:onProperty :references ;
+        owl:hasSelf "true"^^xsd:boolean ] .
+
+
+###############################################################################
+#  CARDINALITY AXIOMS ON Engagement
+#
+#  Section 9 of the design document claims each Engagement has EXACTLY one
+#  fromWork, toWork and aboutConcept. owl:FunctionalProperty alone only gives
+#  "at most one". These qualified exact-cardinality axioms state the full
+#  claim in OWL; the SHACL shapes still enforce the minimum at validation
+#  time, because OWL's open-world assumption will never report a missing one.
+###############################################################################
+
+:Engagement rdfs:subClassOf
+    [ a owl:Restriction ; owl:onProperty :fromWork ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass :Work ] ,
+    [ a owl:Restriction ; owl:onProperty :toWork ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass :Work ] ,
+    [ a owl:Restriction ; owl:onProperty :aboutConcept ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass :Concept ] .
+
+
+###############################################################################
+#  KEYS AND PROPERTY DISJOINTNESS
+###############################################################################
+
+# owl:hasKey gives the entity-matching story promised in Section 2 of the
+# design brief: two philosophers sharing an externalId are the same person.
+# Unlike owl:InverseFunctionalProperty it is DL-safe (it applies only to
+# named individuals), so it cannot make the ontology undecidable.
+#
+# For the key to mean anything, :externalId must be present on every
+# :Philosopher. All 31 now carry a Wikidata QID, each one verified against
+# the live Wikidata API (see philosophy_links.ttl for the method), and all
+# 31 are distinct.
+#
+# KNOWN TOOL BUG - owlrl 7.6.2 mis-implements this axiom.
+# Running an OWL-RL closure over this file with owlrl produces 4,352 spurious
+# owl:sameAs triples: it concludes that every philosopher is every other
+# philosopher, which then inflates hasTeachingAncestor from 19 to 961
+# (= 31 x 31). The ontology is NOT at fault. The library's prp-key rule
+# compares only the first len(keys) - 1 key properties:
+#
+#     for i in range(0, len(pis) - 1):          # owlrl/OWLRL.py, rule prp-key
+#
+# so for a SINGLE-property key the comparison loop is empty, "same" is never
+# falsified, and all individuals of the class collapse. Reproduced on a
+# three-individual toy ontology with all-distinct keys: a 1-property key
+# yields 6 spurious sameAs, while 2- and 3-property keys behave correctly.
+#
+# HermiT classifies this file correctly and reports no such merge. build.py
+# therefore asserts that the OWL-RL closure introduces no non-reflexive
+# owl:sameAs, and skips this axiom when running owlrl. See REPORT.md Sec. 6.
+#
+# :Work has NO key: only works with an en.wikipedia article carry an
+# externalId, so the property is partial there and a key would be unsound.
+:Philosopher owl:hasKey ( :externalId ) .
+
+# Teaching and reading are different kinds of relation and share no pairs.
+:studiedUnder owl:propertyDisjointWith :hasRead .
+
+# A work cannot both cite and be criticized via the same ordered pair being
+# simultaneously an act of praise and of criticism about the SAME concept;
+# praise and criticism about DIFFERENT concepts is allowed, which is why
+# :criticizes and :praises are deliberately NOT declared disjoint here.
+# (:WorldAsWill both praises and criticizes :CritiquePureReason.)

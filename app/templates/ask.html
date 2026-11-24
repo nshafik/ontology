@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Ask - Philosophy Ontology{% endblock %}
+{% block body %}
+<h1>Ask the knowledge graph</h1>
+<p class="sub">
+  Your question is routed to one of the reviewed competency queries, which then
+  runs against the endpoint. Routing:
+  <strong>{{ 'Gemini (closed-list classification)' if llm else 'keyword retrieval' }}</strong>.
+  {% if not llm %}Set <code>GEMINI_API_KEY</code> to enable LLM routing and phrasing.{% endif %}
+  The LLM never writes SPARQL &mdash; see <code>LLM_EVALUATION.md</code> for why.
+</p>
+
+<form id="ask" class="panel" style="display:grid;gap:10px">
+  <input id="q" maxlength="500" required autocomplete="off"
+         placeholder="e.g. Has the Republic been criticized?">
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <select id="cq" style="flex:2;min-width:240px">
+      <option value="">Route automatically</option>
+      {% for c in cqs %}<option value="{{ c.id }}">{{ c.id }} &middot; {{ c.question }}</option>{% endfor %}
+    </select>
+    <input id="focus" maxlength="160" style="flex:1;min-width:180px"
+           placeholder="Optional focus, e.g. Republic or :Plato">
+    <button id="go" type="submit">Ask</button>
+  </div>
+</form>
+
+<div class="cqlist" id="examples">
+  <a href="#">Has the Republic been criticized?</a>
+  <a href="#">Which philosophers studied under other philosophers?</a>
+  <a href="#">Which concepts do Schopenhauer's works engage with?</a>
+  <a href="#">Which works reference Critique of Pure Reason?</a>
+  <a href="#">Which schools are sub-schools of Medieval Philosophy?</a>
+  <a href="#">Which books might interest Alice?</a>
+</div>
+
+<div id="out" aria-live="polite" style="margin-top:20px"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, ...kids) => {
+  const n = Object.assign(document.createElement(tag), props);
+  n.append(...kids); return n;
+};
+document.querySelectorAll("#examples a").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault(); $("q").value = a.textContent; $("q").focus();
+}));
+$("ask").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("go").disabled = true;
+  $("out").replaceChildren(el("p", {className: "muted", textContent: "Querying..."}));
+  try {
+    const r = await fetch("/api/ask", {method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({question: $("q").value, cq_id: $("cq").value, focus: $("focus").value})});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || "Request failed");
+    const panel = el("div", {className: "panel"});
+    panel.append(el("h2", {textContent: "Answer", style: "margin-top:0"}),
+                 el("p", {textContent: d.answer}));
+    if (d.route) {
+      panel.append(el("p", {className: "muted"},
+        "Routed to ", el("a", {href: "/cq/" + d.route, textContent: d.route}),
+        ` (${d.question_text})` + (d.focus ? ` with ${d.focus}` : "") +
+        ` \u00b7 router: ${d.router} \u00b7 answer: ${d.answer_mode}`));
+    }
+    $("out").replaceChildren(panel);
+    if (d.rows && d.rows.length) {
+      const vars = d.vars.length ? d.vars : Object.keys(d.rows[0]);
+      const t = el("table");
+      t.append(el("tr", {}, ...vars.map(v => el("th", {textContent: v}))));
+      d.rows.forEach(row => t.append(el("tr", {}, ...vars.map(v => {
+        const c = row[v]; const td = el("td");
+        if (c && c.type === "uri" && c.value.includes("#")) {
+          const name = c.value.split("#")[1];
+          td.append(el("a", {href: "/entity/" + name, textContent: ":" + name}));
+        } else td.textContent = c ? c.value : "";
+        return td;
+      }))));
+      $("out").append(el("div", {className: "panel", style: "padding:0;overflow-x:auto"}, t));
+    }
+    if (d.query) $("out").append(el("h2", {textContent: "Query executed"}), el("pre", {textContent: d.query}));
+  } catch (err) {
+    $("out").replaceChildren(el("div", {className: "err", textContent: err.message}));
+  } finally { $("go").disabled = false; }
+});
+</script>
+{% endblock %}

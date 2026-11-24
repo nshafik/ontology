@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Philosophy Ontology{% endblock %}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+  <style>
+    :root {
+      --bg:#fbfbfd; --panel:#fff; --ink:#1c1c1e; --muted:#6b6b70;
+      --line:#e3e3e8; --accent:#3b5bdb; --accent-soft:#eef1fd;
+      --crit:#c0392b; --praise:#27ae60; --neutral:#7f8c8d;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink);
+           font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+    header { background:var(--panel); border-bottom:1px solid var(--line);
+             padding:0 24px; position:sticky; top:0; z-index:10; }
+    .bar { display:flex; align-items:center; gap:22px; max-width:1180px;
+           margin:0 auto; height:56px; }
+    .brand { font-weight:650; letter-spacing:-.2px; }
+    nav a { color:var(--muted); text-decoration:none; font-size:14px; }
+    nav a:hover, nav a.on { color:var(--accent); }
+    nav { display:flex; gap:18px; flex:1; }
+    .pill { font-size:12px; padding:3px 9px; border-radius:20px;
+            background:#e9f7ef; color:#1e7e45; border:1px solid #c7ead6; }
+    .pill.down { background:#fdecea; color:#a32b20; border-color:#f5c6c2; }
+    main { max-width:1180px; margin:0 auto; padding:28px 24px 64px; }
+    h1 { font-size:24px; margin:0 0 6px; letter-spacing:-.3px; }
+    h2 { font-size:17px; margin:30px 0 12px; }
+    .sub { color:var(--muted); margin:0 0 22px; }
+    .panel { background:var(--panel); border:1px solid var(--line);
+             border-radius:10px; padding:18px 20px; margin-bottom:18px; }
+    .grid { display:grid; gap:14px; }
+    .g3 { grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+    .g2 { grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); }
+    .stat { background:var(--panel); border:1px solid var(--line);
+            border-radius:10px; padding:16px 18px; }
+    .stat b { display:block; font-size:26px; letter-spacing:-.5px; }
+    .stat span { color:var(--muted); font-size:13px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line);
+            vertical-align:top; }
+    th { color:var(--muted); font-weight:600; font-size:12px;
+         text-transform:uppercase; letter-spacing:.4px; }
+    tr:last-child td { border-bottom:none; }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    pre { background:#1e2128; color:#e6e6e6; padding:14px 16px; border-radius:8px;
+          overflow-x:auto; font-size:12.5px; line-height:1.5; }
+    a { color:var(--accent); }
+    .tag { display:inline-block; font-size:11.5px; padding:2px 8px;
+           border-radius:4px; background:var(--accent-soft); color:var(--accent);
+           margin-right:5px; }
+    .muted { color:var(--muted); font-size:13px; }
+    .cqlist { display:flex; flex-wrap:wrap; gap:7px; }
+    .cqlist a { display:inline-block; padding:5px 11px; border-radius:6px;
+                border:1px solid var(--line); background:var(--panel);
+                text-decoration:none; font-size:13px; }
+    .cqlist a:hover,.cqlist a.on { background:var(--accent); color:#fff;
+                                   border-color:var(--accent); }
+    input,select { font:inherit; padding:6px 9px; border:1px solid var(--line);
+                   border-radius:6px; background:#fff; }
+    button { font:inherit; padding:6px 15px; border:none; border-radius:6px;
+             background:var(--accent); color:#fff; cursor:pointer; }
+    .err { background:#fdecea; border:1px solid #f5c6c2; color:#a32b20;
+           padding:11px 14px; border-radius:8px; font-size:14px; }
+    .viz { height:430px; border:1px solid var(--line); border-radius:8px;
+           background:var(--panel); }
+    .legend span { margin-right:16px; font-size:13px; }
+    .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
+           margin-right:5px; }
+    .score { font-variant-numeric:tabular-nums; font-weight:650; }
+    .why { color:var(--muted); font-size:13px; margin:3px 0 0 0; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <span class="brand">Philosophy Ontology</span>
+    <nav>
+      <a href="/">Overview</a>
+      <a href="/browse/philosophers">Philosophers</a>
+      <a href="/browse/works">Works</a>
+      <a href="/browse/schools">Schools</a>
+      <a href="/ask">Ask</a>
+      <a href="/cq/CQ1">Questions</a>
+      <a href="/recommend">Recommendations</a>
+      <a href="/visualise">Visualisations</a>
+      <a href="/ontology">Ontology</a>
+      <a href="/sources">Sources</a>
+    </nav>
+    <span class="pill {{ '' if live else 'down' }}">
+      {{ 'Fuseki live' if live else 'local fallback' }}
+    </span>
+  </div>
+</header>
+<main>
+{% block body %}{% endblock %}
+</main>
+</body>
+</html>

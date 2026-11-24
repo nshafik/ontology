@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Ontology - Philosophy Ontology{% endblock %}
+{% block body %}
+<h1>Ontology browser</h1>
+<p class="sub">
+  Read directly from <code>philosophy_ontology.ttl</code>:
+  {{ classes|length }} classes and {{ properties|length }} properties.
+  Defined classes are marked; their membership is inferred by the reasoner.
+</p>
+
+<h2>Classes</h2>
+<div class="panel" style="padding:0;overflow-x:auto">
+<table>
+  <tr><th>Class</th><th>Subclass of</th><th>Description</th></tr>
+  {% for c in classes %}
+  <tr>
+    <td><code>{{ c.name }}</code>{% if c.defined %} <span class="tag">defined</span>{% endif %}</td>
+    <td>{{ c.parents | join(', ') or '-' }}</td>
+    <td class="muted">{{ c.comment }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<h2>Properties</h2>
+<div class="panel" style="padding:0;overflow-x:auto">
+<table>
+  <tr><th>Property</th><th>Kind</th><th>Domain</th><th>Range</th><th>Characteristics</th></tr>
+  {% for p in properties %}
+  <tr>
+    <td><code>{{ p.name }}</code>
+      {% if p.parents %}<div class="why">sub-property of {{ p.parents | join(', ') }}</div>{% endif %}
+      {% if p.inverse %}<div class="why">inverse of {{ p.inverse | join(', ') }}</div>{% endif %}
+    </td>
+    <td>{{ p.kind }}</td>
+    <td>{{ p.domain | join(', ') or '-' }}</td>
+    <td>{{ p.range | join(', ') or '-' }}</td>
+    <td>{% for t in p.traits %}<span class="tag">{{ t }}</span>{% endfor %}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endblock %}

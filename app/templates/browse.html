@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ cls }} - Philosophy Ontology{% endblock %}
+{% block body %}
+<h1>{{ cls }}</h1>
+<p class="sub">{{ rows|length }} individuals of <code>:{{ cls }}</code>.</p>
+<div class="panel" style="padding:0">
+<table>
+  <tr><th>Label</th><th>IRI</th></tr>
+  {% for row in rows %}
+  <tr>
+    <td><a href="/entity/{{ row.item.value.split('#')[1] }}">{{ row.label.value }}</a></td>
+    <td><code class="muted">{{ row.item.value | short }}</code></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endblock %}
