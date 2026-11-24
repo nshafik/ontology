@@ -1,5 +1,6 @@
 @prefix :     <http://example.org/philosophy#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @base         <http://example.org/philosophy> .
@@ -72,6 +73,8 @@
 :PhenomenologicalMethod a :Concept ; rdfs:label "Phenomenological method"@en .
 :Being a :Concept ; rdfs:label "Being"@en .
 :BeingTowardDeath a :Concept ; rdfs:label "Being-toward-death"@en .
+:Compassion a :Concept ; rdfs:label "Compassion"@en .
+:Pessimism a :Concept ; rdfs:label "Pessimism"@en .
 
 # ---- philosophers ---
 :Socrates a :Philosopher ;
@@ -498,6 +501,21 @@
 :eng10 a :Engagement ;
     :fromWork :CommentaryOnMetaphysics ; :toWork :Metaphysics ; :aboutConcept :Being ;
     :stance "neutral" ; :confidenceScore 0.9 .
+# Curated Nietzsche engagements connecting to works enriched from Wikidata.
+# Provenance points to the Stanford Encyclopedia of Philosophy entries verified
+# against the claims; see philosophy_shapes.ttl for the provenance warning.
+:eng11 a :Engagement ;
+    :fromWork :OnTheGenealogyOfMorality ; :toWork :Republic ; :aboutConcept :TheoryOfForms ;
+    :stance "criticizes" ; :confidenceScore 0.85 ;
+    prov:wasDerivedFrom <https://plato.stanford.edu/entries/nietzsche/> .
+:eng12 a :Engagement ;
+    :fromWork :BeyondGoodAndEvil ; :toWork :WorldAsWill ; :aboutConcept :Pessimism ;
+    :stance "criticizes" ; :confidenceScore 0.85 ;
+    prov:wasDerivedFrom <https://plato.stanford.edu/entries/nietzsche-moral-political/> .
+:eng13 a :Engagement ;
+    :fromWork :OnTheGenealogyOfMorality ; :toWork :WorldAsWill ; :aboutConcept :Compassion ;
+    :stance "criticizes" ; :confidenceScore 0.8 ;
+    prov:wasDerivedFrom <https://plato.stanford.edu/entries/nietzsche/> .
 
 # ---- readers ---
 :reader1 a :Reader ;
@@ -556,6 +574,7 @@
 
 # --- Concept (9) ---
 :Being a owl:NamedIndividual . :BeingTowardDeath a owl:NamedIndividual .
+:Compassion a owl:NamedIndividual . :Pessimism a owl:NamedIndividual .
 :Causality a owl:NamedIndividual . :FormOfTheGood a owl:NamedIndividual .
 :KantianCategories a owl:NamedIndividual .
 :PhenomenologicalMethod a owl:NamedIndividual .
@@ -610,17 +629,19 @@
 :Monadology a owl:NamedIndividual . :OnLiberty a owl:NamedIndividual .
 :ProblemsOfPhilosophy a owl:NamedIndividual .
 
-# --- Engagement (10) ---
+# --- Engagement (13) ---
 :eng01 a owl:NamedIndividual . :eng02 a owl:NamedIndividual .
 :eng03 a owl:NamedIndividual . :eng04 a owl:NamedIndividual .
 :eng05 a owl:NamedIndividual . :eng06 a owl:NamedIndividual .
 :eng07 a owl:NamedIndividual . :eng08 a owl:NamedIndividual .
 :eng09 a owl:NamedIndividual . :eng10 a owl:NamedIndividual .
+:eng11 a owl:NamedIndividual . :eng12 a owl:NamedIndividual .
+:eng13 a owl:NamedIndividual .
 
 # --- Reader (2) ---
 :reader1 a owl:NamedIndividual . :reader2 a owl:NamedIndividual .
 
-# All 109 individuals above are pairwise distinct.
+# All 114 individuals above are pairwise distinct.
 [] a owl:AllDifferent ;
    owl:distinctMembers (
       :ClassicalGreece :EarlyModernPeriod :MedievalPeriod
@@ -631,8 +652,8 @@
       :EarlyModernPhilosophy :Empiricism :Existentialism :GermanIdealism
       :MedievalPhilosophy :Peripatetic :Phenomenology :Platonism
       :Rationalism :Scholasticism :Stoicism :Thomism :WesternPhilosophy
-      :Being :BeingTowardDeath :Causality :FormOfTheGood
-      :KantianCategories :PhenomenologicalMethod :PictureTheory
+      :Being :BeingTowardDeath :Causality :Compassion :FormOfTheGood
+      :KantianCategories :Pessimism :PhenomenologicalMethod :PictureTheory
       :TheoryOfForms :TranscendentalIdealism
       :AlbertusMagnus :Aquinas :Arendt :Aristotle :Augustine :Berkeley
       :Brentano :Descartes :Gadamer :Hegel :Heidegger :Hume :Husserl
@@ -650,6 +671,6 @@
       :CommentaryOnMetaphysics
       :Monadology :OnLiberty :ProblemsOfPhilosophy
       :eng01 :eng02 :eng03 :eng04 :eng05 :eng06 :eng07 :eng08 :eng09
-      :eng10
+      :eng10 :eng11 :eng12 :eng13
       :reader1 :reader2
    ) .

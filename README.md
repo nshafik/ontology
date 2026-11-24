@@ -10,7 +10,7 @@ ISM601 — Introduction to Web Science, 2026/27. Full write-up in `REPORT.md`.
 
 ```
 philosophy_ontology.ttl    TBox: 14 asserted + 4 defined classes, axioms
-philosophy_dataset.ttl     ABox: 109 individuals, 10 engagements
+philosophy_dataset.ttl     ABox: 114 individuals, 13 engagements
 philosophy_links.ttl       owl:sameAs / seeAlso to Wikidata and DBpedia
 philosophy_shapes.ttl      SHACL: cardinality, year order, teaching cycles
 philosophy_complete.ttl    GENERATED reasoning bundle (build.py)
@@ -19,16 +19,17 @@ export_rdf.py              RDF/XML exports for Protégé (exports/)
 make_diagrams.py           ontology diagrams, generated from the Turtle
 
 app/
-  queries.py               the 15 competency questions - single source of truth
+  queries.py               competency questions (CQ1-CQ16) and rules (R1-R3)
   fuseki.py                start Apache Jena Fuseki and load the graphs
   run_cqs.py               run every CQ over HTTP and assert row counts
-  agent.py                 R1 rule materialisation, scored + explained recommendations
-  ask.py                   grounded Q&A: LLM routes to a reviewed CQ, never writes SPARQL
+  agent.py                 R1/R3 rule materialisation, scored + explained recommendations
+  ask.py                   grounded Q&A: LLM/keyword routing to a reviewed CQ
   llm_sparql.py            free-form NL->SPARQL evaluation against a baseline
+  enrich_wikidata.py       batched Wikidata lookup + cache for works and influences
   sources.py               bounded clients for 18 cultural-heritage / LOD providers
   ingest_sources.py        import provider metadata as PROV-O records
   server.py                Flask web interface and JSON APIs
-tests/test_app.py          21 tests; no Fuseki or network needed
+tests/test_app.py          33 tests; no Fuseki or network needed
 ```
 
 ## Quick start

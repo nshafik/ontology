@@ -34,6 +34,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from typing import Callable
 
 from queries import BY_ID, CQS, render
@@ -133,7 +134,10 @@ def mentions(text: str, name: str) -> bool:
 
 
 def find_entity(text: str, entities: list[Entity], kind: str | None = None) -> Entity | None:
-    """Longest whole-word name match; ambiguous ties are not guessed."""
+    """Longest whole-word name match, with fuzzy single-word fallback for typos.
+
+    Ambiguous ties are never guessed.
+    """
     matches: list[tuple[int, Entity]] = []
     for ent in entities:
         if kind and ent.kind != kind:
@@ -142,10 +146,30 @@ def find_entity(text: str, entities: list[Entity], kind: str | None = None) -> E
             if mentions(text, name):
                 matches.append((len(name), ent))
                 break
-    if not matches:
+    if matches:
+        longest = max(n for n, _ in matches)
+        best = {e.iri: e for n, e in matches if n == longest}
+        return next(iter(best.values())) if len(best) == 1 else None
+
+    # Fallback: fuzzy match whole words (>= 5 chars, not stopwords) against full
+    # names or philosopher surnames, catching typos such as "nietzche".
+    words = [w for w in re.findall(r"[A-Za-z]+", text)
+             if len(w) >= 5 and w.lower() not in STOPWORDS]
+    fuzzy: list[tuple[float, Entity]] = []
+    for ent in entities:
+        if kind and ent.kind != kind:
+            continue
+        for name in names_of(ent):
+            if " " in name:
+                continue
+            for word in words:
+                ratio = SequenceMatcher(None, word.lower(), name.lower()).ratio()
+                if ratio >= 0.84:
+                    fuzzy.append((ratio, ent))
+    if not fuzzy:
         return None
-    longest = max(n for n, _ in matches)
-    best = {e.iri: e for n, e in matches if n == longest}
+    top = max(r for r, _ in fuzzy)
+    best = {e.iri: e for r, e in fuzzy if r == top}
     return next(iter(best.values())) if len(best) == 1 else None
 
 
@@ -168,11 +192,15 @@ def tokens(text: str) -> set[str]:
 def keyword_route(question: str, entities: list[Entity]) -> tuple[str, str | None] | None:
     """Non-LLM router: Jaccard overlap with the stored CQ text.
 
-    A named entity in the question also votes: a question that names a Reader
-    is far more likely to be CQ12 than CQ1, whatever the wording.
+    Entity types guide routing: a question naming a Philosopher cannot be a
+    Work-only query such as CQ14, even if both share the word "criticized".
     """
     want = tokens(question)
     named = [e for e in entities if any(mentions(question, n) for n in names_of(e))]
+    if not named:
+        matched = find_entity(question, entities)
+        if matched is not None:
+            named = [matched]
     named_kinds = {e.kind for e in named}
 
     best, best_score = None, 0.0
@@ -180,8 +208,11 @@ def keyword_route(question: str, entities: list[Entity]) -> tuple[str, str | Non
         have = tokens(cq.question)
         score = len(want & have) / len(want | have) if want | have else 0.0
         param_kind = PARAM_TYPES.get(next(iter(cq.params), ""), None)
-        if param_kind and param_kind in named_kinds:
-            score += 0.15
+        if param_kind:
+            if param_kind in named_kinds:
+                score += 0.25
+            elif named_kinds:
+                score -= 0.25
         if score > best_score:
             best, best_score = cq, score
     if best is None or best_score < 0.1:

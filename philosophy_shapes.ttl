@@ -1,4 +1,5 @@
 @prefix :     <http://example.org/philosophy#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix sh:   <http://www.w3.org/ns/shacl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
@@ -74,6 +75,9 @@
                   sh:in ( "praises" "criticizes" "neutral" ) ] ;
     sh:property [ sh:path :confidenceScore ; sh:minCount 1 ; sh:maxCount 1 ;
                   sh:datatype xsd:decimal ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+    sh:property [ sh:path prov:wasDerivedFrom ; sh:minCount 1 ; sh:nodeKind sh:IRI ;
+                  sh:severity sh:Warning ;
+                  sh:message "Engagement has no prov:wasDerivedFrom source IRI." ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:message "An engagement must link two different works." ;

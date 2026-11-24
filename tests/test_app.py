@@ -80,7 +80,7 @@ class Recommender(unittest.TestCase):
         added = Agent().materialise_rules()
         r1 = [x for x in added if x[1] in ("criticizes", "praises")]
         r3 = [x for x in added if x[1] == "inferredInterestIn"]
-        self.assertEqual(len(r1), 9)
+        self.assertEqual(len(r1), 12)
         self.assertEqual(len(r3), 6)
 
     def test_russell_rescued_by_read_derived_interests(self):
@@ -115,6 +115,7 @@ class Routing(unittest.TestCase):
     def test_keyword_routes(self):
         cases = {
             "Has the Republic been criticized?": ("CQ14", ":Republic"),
+            "who was criticized by nietzche": ("CQ16", ":Nietzsche"),
             "Which philosophers studied under other philosophers?": ("CQ2", None),
             "Which concepts do Schopenhauer's works engage with?": ("CQ11", ":Schopenhauer"),
             "Which works reference Critique of Pure Reason?": ("CQ5", ":CritiquePureReason"),
@@ -123,6 +124,13 @@ class Routing(unittest.TestCase):
         for question, expected in cases.items():
             with self.subTest(question=question):
                 self.assertEqual(self.route(question), expected)
+
+    def test_nietzsche_criticism_returns_curated_targets(self):
+        result = ask.answer("who was criticized by nietzche",
+                            server.sparql, self.entities, use_llm=False)
+        self.assertEqual((result["route"], result["focus"]), ("CQ16", ":Nietzsche"))
+        targets = {r["targetAuthor"]["value"] for r in result["rows"]}
+        self.assertEqual(targets, {"Plato", "Arthur Schopenhauer"})
 
     def test_unrelated_question_is_not_forced(self):
         self.assertIsNone(self.route("What is the weather?"))

@@ -90,7 +90,7 @@ ORDER BY ?link ?studentName ?teacherName""",
         question="Which work has been criticized at least once?",
         features="SELECT DISTINCT",
         path=":Engagement -toWork-> :Work with stance 'criticizes'",
-        expected=5,
+        expected=6,
         sparql="""
 SELECT DISTINCT ?title
 WHERE {
@@ -230,7 +230,7 @@ ORDER BY ?name""",
         features="SELECT, COUNT, GROUP BY",
         path=":Philosopher <-createdBy- :Work <-fromWork|toWork- :Engagement -aboutConcept-> :Concept",
         params={"philosopher": ":Schopenhauer"},
-        expected=2,
+        expected=4,
         sparql="""
 SELECT ?conceptLabel (COUNT(DISTINCT ?e) AS ?engagements)
 WHERE {
@@ -328,6 +328,27 @@ DESCRIBE {{work}}""",
               "endpoint and 8 against the core file alone."),
         endpoint_expected=11,
     ),
+    CQ(
+        id="CQ16",
+        question="Which works or philosophers were criticized or praised by a given philosopher?",
+        features="SELECT, OPTIONAL",
+        path=":Philosopher <-createdBy- :Work <-fromWork- :Engagement -toWork-> :Work",
+        params={"philosopher": ":Nietzsche"},
+        expected=3,
+        sparql="""
+SELECT ?workTitle ?stance ?targetTitle ?targetAuthor ?conceptLabel
+WHERE {
+  VALUES ?p { {{philosopher}} }
+  ?w :createdBy ?p ; :title ?workTitle .
+  ?e a :Engagement ; :fromWork ?w ; :toWork ?t ; :stance ?stance ;
+     :aboutConcept ?c .
+  ?t :title ?targetTitle .
+  ?c rdfs:label ?conceptLabel .
+  OPTIONAL { ?t :createdBy ?a . ?a rdfs:label ?targetAuthor }
+}
+ORDER BY ?stance ?targetTitle""",
+        note="Extension beyond the brief's 15 questions: answers 'who did philosopher X criticize?'.",
+    ),
 ]
 
 RULES: list[CQ] = [
@@ -336,7 +357,7 @@ RULES: list[CQ] = [
         question="Derive the :criticizes shortcut links from engagement stance",
         features="CONSTRUCT",
         path=":Engagement -fromWork/toWork-> :Work",
-        expected=6,
+        expected=9,
         kind="construct",
         sparql="""
 CONSTRUCT { ?a :criticizes ?b }
