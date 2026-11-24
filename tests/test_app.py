@@ -205,6 +205,115 @@ class Api(unittest.TestCase):
         self.assertIn(":hasTeachingAncestor", studied["parents"])
 
 
+def http_reply(body: str):
+    resp = mock.MagicMock()
+    resp.read.return_value = body.encode()
+    resp.__enter__.return_value = resp
+    return resp
+
+
+class FusekiBackend(unittest.TestCase):
+    """server.sparql() with Fuseki 'live': urlopen is mocked, no server needed."""
+
+    TURTLE = """@prefix : <http://example.org/philosophy#> .
+:CritiquePureReason :title "Critique of Pure Reason" ; :createdBy :Kant ."""
+
+    def setUp(self):
+        alive = mock.patch.object(server, "endpoint_alive", return_value=True)
+        alive.start()
+        self.addCleanup(alive.stop)
+
+    def sent_accept(self, urlopen) -> str:
+        return urlopen.call_args.args[0].get_header("Accept")
+
+    def test_query_form_detection(self):
+        cases = {
+            render(BY_ID["CQ1"]): "SELECT",
+            render(BY_ID["CQ13"]): "CONSTRUCT",
+            render(BY_ID["CQ14"]): "ASK",
+            render(BY_ID["CQ15"]): "DESCRIBE",
+            "# describe in a comment\nSELECT ?s WHERE { ?s ?p ?o }": "SELECT",
+            "prefix x: <http://x/describe#>\nDESCRIBE x:a": "DESCRIBE",
+        }
+        for query, form in cases.items():
+            with self.subTest(form=form):
+                self.assertEqual(server.query_form(query), form)
+
+    @mock.patch("server.urllib.request.urlopen")
+    def test_describe_requests_turtle_and_returns_spo_rows(self, urlopen):
+        urlopen.return_value = http_reply(self.TURTLE)
+        payload = server.sparql(render(BY_ID["CQ15"]))
+        self.assertEqual(self.sent_accept(urlopen), "text/turtle")
+        self.assertEqual(payload["head"]["vars"], ["s", "p", "o"])
+        rows = payload["results"]["bindings"]
+        self.assertEqual(len(rows), 2)
+        title = next(r for r in rows if r["p"]["value"].endswith("#title"))
+        self.assertEqual(title["o"], {"type": "literal", "value": "Critique of Pure Reason"})
+        creator = next(r for r in rows if r["p"]["value"].endswith("#createdBy"))
+        self.assertEqual(creator["o"]["type"], "uri")
+
+    @mock.patch("server.urllib.request.urlopen")
+    def test_construct_requests_turtle(self, urlopen):
+        urlopen.return_value = http_reply(self.TURTLE)
+        payload = server.sparql(render(BY_ID["CQ13"]))
+        self.assertEqual(self.sent_accept(urlopen), "text/turtle")
+        self.assertEqual(len(payload["results"]["bindings"]), 2)
+
+    @mock.patch("server.urllib.request.urlopen")
+    def test_select_and_ask_request_json(self, urlopen):
+        urlopen.return_value = http_reply(json.dumps(
+            {"head": {"vars": ["n"]}, "results": {"bindings": [{"n": {"type": "literal", "value": "3"}}]}}))
+        self.assertEqual(server.sparql(render(BY_ID["CQ1"]))["results"]["bindings"][0]["n"]["value"], "3")
+        self.assertEqual(self.sent_accept(urlopen), "application/sparql-results+json")
+        urlopen.return_value = http_reply('{"head": {}, "boolean": true}')
+        self.assertTrue(server.sparql(render(BY_ID["CQ14"]))["boolean"])
+        self.assertEqual(self.sent_accept(urlopen), "application/sparql-results+json")
+
+    @mock.patch("server.urllib.request.urlopen")
+    def test_same_shape_as_local_fallback(self, urlopen):
+        with mock.patch.object(server, "endpoint_alive", return_value=False):
+            local = server.sparql(render(BY_ID["CQ15"]))
+        # serialise the local DESCRIBE graph and feed it back as Fuseki's answer
+        result = server.fallback_graph().g.query(render(BY_ID["CQ15"]))
+        urlopen.return_value = http_reply(result.graph.serialize(format="turtle"))
+        remote = server.sparql(render(BY_ID["CQ15"]))
+        self.assertEqual(remote, local)
+
+    @mock.patch("server.urllib.request.urlopen")
+    def test_unreadable_reply_is_backend_error(self, urlopen):
+        urlopen.return_value = http_reply("<html>proxy error</html>")
+        with self.assertRaises(server.BackendError):
+            server.sparql(render(BY_ID["CQ1"]))
+        self.assertFalse(issubclass(server.BackendError, ValueError))
+
+    @mock.patch("server.urllib.request.urlopen")
+    def test_api_ask_maps_backend_failure_to_502(self, urlopen):
+        server._entities = None
+        urlopen.side_effect = [
+            http_reply(json.dumps({"head": {"vars": ["e", "name", "kind"]}, "results": {"bindings": [
+                {"e": {"type": "uri", "value": "http://example.org/philosophy#CritiquePureReason"},
+                 "name": {"type": "literal", "value": "Critique of Pure Reason"},
+                 "kind": {"type": "literal", "value": "Work"}}]}})),
+            http_reply("not turtle {{{"),
+        ]
+        try:
+            with mock.patch.dict(os.environ, {"GEMINI_API_KEY": ""}):
+                r = server.app.test_client().post("/api/ask", json={
+                    "question": "Tell me everything about Critique of Pure Reason"})
+        finally:
+            server._entities = None  # do not leak the one-entity cache
+        self.assertEqual(r.status_code, 502)
+        self.assertIn("Fuseki", r.get_json()["error"])
+
+    @mock.patch("server.urllib.request.urlopen")
+    def test_cq_page_renders_describe_from_fuseki(self, urlopen):
+        urlopen.return_value = http_reply(self.TURTLE)
+        r = server.app.test_client().get("/cq/CQ15")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"Critique of Pure Reason", r.data)
+        self.assertNotIn(b"JSONDecodeError", r.data)
+
+
 class SourceRecords(unittest.TestCase):
     def test_records_are_provenance_not_domain_claims(self):
         from rdflib import RDF

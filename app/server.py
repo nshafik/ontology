@@ -79,40 +79,98 @@ def fallback_graph() -> Agent:
     return _fallback
 
 
+class BackendError(Exception):
+    """The SPARQL backend failed or returned something unreadable.
+
+    Deliberately NOT a ValueError: json.JSONDecodeError is one, and letting it
+    escape made /api/ask report a server fault as a 400 "bad input".
+    """
+
+
+# Strip comments and the PREFIX/BASE prologue, then read the query form.
+_PROLOGUE = re.compile(r"(#[^\n]*)|(\b(PREFIX|BASE)\b\s*[^<]*<[^>]*>)", re.I)
+_FORM = re.compile(r"^\s*(SELECT|ASK|CONSTRUCT|DESCRIBE)\b", re.I)
+
+
+def query_form(query: str) -> str:
+    """SELECT | ASK | CONSTRUCT | DESCRIBE, decided before contacting Fuseki.
+
+    Fuseki answers CONSTRUCT and DESCRIBE with an RDF graph, not SPARQL-JSON,
+    so the Accept header has to be chosen per form. Asking for
+    sparql-results+json on a DESCRIBE used to crash CQ13 and CQ15 in the web
+    app with JSONDecodeError whenever Fuseki was live.
+    """
+    match = _FORM.match(_PROLOGUE.sub(" ", query))
+    return match.group(1).upper() if match else "SELECT"
+
+
+def term_json(term) -> dict:
+    """One RDF term as a SPARQL-JSON binding value."""
+    from rdflib import BNode, URIRef
+    if isinstance(term, URIRef):
+        return {"type": "uri", "value": str(term)}
+    if isinstance(term, BNode):
+        return {"type": "bnode", "value": str(term)}
+    return {"type": "literal", "value": str(term)}
+
+
+def graph_json(graph) -> dict:
+    """A CONSTRUCT/DESCRIBE graph as s/p/o rows, sorted for stable output.
+
+    Both backends go through this, so templates and ask.py see one shape.
+    """
+    rows = [{"s": term_json(s), "p": term_json(p), "o": term_json(o)}
+            for s, p, o in sorted(graph, key=lambda t: tuple(str(x) for x in t))]
+    return {"head": {"vars": ["s", "p", "o"]}, "results": {"bindings": rows}}
+
+
+def fuseki_query(query: str) -> dict:
+    """Run one query on Fuseki and normalise the answer to SPARQL-JSON."""
+    graph_form = query_form(query) in ("CONSTRUCT", "DESCRIBE")
+    accept = "text/turtle" if graph_form else "application/sparql-results+json"
+    req = urllib.request.Request(
+        ENDPOINT, data=urllib.parse.urlencode({"query": query}).encode(),
+        headers={"Accept": accept,
+                 "Content-Type": "application/x-www-form-urlencoded"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:400]
+        raise BackendError(f"Fuseki returned HTTP {exc.code}: {detail}") from exc
+    except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+        raise BackendError(f"Could not reach Fuseki: {exc}") from exc
+
+    try:
+        if graph_form:
+            from rdflib import Graph
+            return graph_json(Graph().parse(data=body, format="turtle"))
+        return json.loads(body)
+    except Exception as exc:  # noqa: BLE001 - any parser failure is a backend fault
+        raise BackendError(
+            f"Fuseki returned an unreadable {'graph' if graph_form else 'result'}: "
+            f"{type(exc).__name__}") from exc
+
+
 def sparql(query: str) -> dict:
     """Run a query and return SPARQL-JSON, via Fuseki or the local fallback."""
     if endpoint_alive():
-        data = urllib.parse.urlencode({"query": query}).encode()
-        req = urllib.request.Request(
-            ENDPOINT, data=data,
-            headers={"Accept": "application/sparql-results+json",
-                     "Content-Type": "application/x-www-form-urlencoded"})
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.load(resp)
+        return fuseki_query(query)
 
     # local fallback: convert an RDFLib result into SPARQL-JSON
-    result = fallback_graph().g.query(query)
+    try:
+        result = fallback_graph().g.query(query)
+    except Exception as exc:  # noqa: BLE001
+        raise BackendError(f"Local query failed: {exc}") from exc
     if result.type == "ASK":
         return {"boolean": bool(result.askAnswer)}
     if result.type in ("CONSTRUCT", "DESCRIBE"):
-        rows = [{"s": {"type": "uri", "value": str(s)},
-                 "p": {"type": "uri", "value": str(p)},
-                 "o": {"type": "uri" if str(o).startswith("http") else "literal",
-                       "value": str(o)}}
-                for s, p, o in result.graph]
-        return {"head": {"vars": ["s", "p", "o"]}, "results": {"bindings": rows}}
+        return graph_json(result.graph)
     variables = [str(v) for v in result.vars]
     rows = []
     for row in result:
-        binding = {}
-        for var in variables:
-            value = row[var]
-            if value is None:
-                continue
-            binding[var] = {
-                "type": "uri" if str(value).startswith("http") else "literal",
-                "value": str(value)}
-        rows.append(binding)
+        rows.append({var: term_json(row[var]) for var in variables
+                     if row[var] is not None})
     return {"head": {"vars": variables}, "results": {"bindings": rows}}
 
 
@@ -132,6 +190,14 @@ app.jinja_env.filters["short"] = short
 # --------------------------------------------------------------------------
 # pages
 # --------------------------------------------------------------------------
+
+@app.errorhandler(BackendError)
+def backend_error(exc: BackendError):
+    """Any page whose query fails gets a 502 with the reason, not a traceback."""
+    if request.path.startswith("/api/"):
+        return jsonify(error=str(exc)), 502
+    return render_template("error.html", message=str(exc)), 502
+
 
 @app.context_processor
 def inject_status():
@@ -219,9 +285,7 @@ def competency(cq_id: str):
     payload = {"head": {"vars": []}, "results": {"bindings": []}}
     try:
         payload = sparql(query)
-    except urllib.error.HTTPError as exc:
-        error = f"{exc.code} {exc.reason}: {exc.read().decode()[:400]}"
-    except Exception as exc:  # noqa: BLE001
+    except BackendError as exc:  # shown inline next to the query, not as a 502 page
         error = str(exc)
     rows = rows_of(payload)
     return render_template(
@@ -439,6 +503,8 @@ def api_ask():
     try:
         result = asker.answer(question.strip(), sparql, entities(),
                               cq_id=cq_id, focus=focus.strip() if focus else None)
+    except BackendError as exc:  # must precede ValueError: a server fault, not bad input
+        return jsonify(error=str(exc)), 502
     except (LookupError, ValueError) as exc:
         return jsonify(error=str(exc)), 400
     except RuntimeError as exc:  # LLM provider failure
